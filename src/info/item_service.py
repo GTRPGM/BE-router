@@ -31,14 +31,6 @@ class ItemService:
         total_pages = (total_count + limit - 1) // limit if total_count > 0 else 0
         is_last_page = (skip + limit) >= total_count
 
-        meta = {
-            "total_count": total_count,
-            "skip": skip,
-            "limit": limit,
-            "is_last_page": is_last_page,
-            "total_pages": total_pages
-        }
-
         meta = PaginationMeta(
             total_count=total_count,
             skip=skip,
