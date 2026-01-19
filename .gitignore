@@ -1,0 +1,44 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-arg.txt
+*.egg-info/
+.coverage
+.pytest_cache/
+nosetests.xml
+.ruff_cache/
+
+# IDE specific files
+.idea/
+*.swp
+*.swo
+
+# Logs and temporary files
+*.log
+*.tmp
+*~
+temp/
+tmp/
+
+# Configuration files
+.env
+.env.local
+.env.*.local
+.flaskenv
+.envrc
+*.code-workspace
+
+# Gemini related files
+.gemini/

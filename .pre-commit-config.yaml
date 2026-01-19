@@ -1,0 +1,34 @@
+# .pre-commit-config.yaml
+exclude: "^ops/tests/fixtures/"
+
+repos:
+  # 1. Standard Hooks (기본적인 파일 위생 및 문법 검사)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md] # 마크다운 줄바꿈 공백은 허용
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ['--maxkb=500'] # 500KB 이상 파일 커밋 방지
+      - id: check-toml
+      - id: check-yaml
+      - id: check-json
+
+  # 2. Ruff (Linting & Formatting) - Strict Mode
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff
+        args: [
+          --fix,
+          --exit-non-zero-on-fix, # 자동 수정되어도 일단 실패(검토 강제)
+        ]
+      - id: ruff-format
+
+  # 3. Markdown Lint (마크다운 형식 검사)
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: ["--config", ".markdownlint.yaml"] # 명시적인 설정을 위해 파일 지정 가능

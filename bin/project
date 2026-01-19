@@ -1,0 +1,32 @@
+#!/bin/bash
+
+CTX=act
+
+if ! docker context inspect "$CTX" >/dev/null 2>&1; then
+  docker context create "$CTX"
+fi
+
+COMMAND=$1
+shift
+
+case "$COMMAND" in
+    lint)
+        echo "Running Ruff Linter & Formatter..."
+        uvx ruff check ../. --fix
+        uvx ruff format ../.
+        ;;
+    pre-commit)
+        echo "Running Pre-commit hooks..."
+        uvx pre-commit run --all-files
+        ;;
+    ci-dev)
+        echo "Simulating Dev CI (act)..."
+        docker context use "$CTX"
+        act pull_request -W .github/workflows/ci-dev.yml --container-architecture linux/amd64
+        docker context use default
+        ;;
+    *)
+        echo "Usage: project {lint|ci-dev}"
+        exit 1
+        ;;
+esac

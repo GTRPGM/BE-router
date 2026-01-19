@@ -1,0 +1,17 @@
+# .markdownlint.yaml 설정
+# 상세 규칙: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+default: true
+
+# MD013: 줄 길이 제한 (비활성화 - 코드 블록이나 긴 문장 허용)
+MD013: false
+
+# MD033: 인라인 HTML 허용 (이미지 크기 조절 등을 위해 필요할 수 있음)
+MD033: false
+
+# MD041: 파일이 헤더(H1)로 시작해야 함 (비활성화)
+MD041: false
+
+# MD024: 동일한 헤더 텍스트 허용
+MD024:
+  siblings_only: true
