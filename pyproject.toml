@@ -31,7 +31,7 @@ dev = ["pytest>=9.0.2"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
-packages = ["app", "auth", "common", "configs"]
+packages = ["app", "configs", "common", "auth", "info"]
 
 
 [tool.uv]
@@ -59,4 +59,4 @@ indent-style = "space"
 "__init__.py" = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app", "auth", "common", "configs"]
+known-first-party = ["app", "configs", "common", "auth", "info"]
