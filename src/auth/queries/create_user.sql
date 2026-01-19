@@ -1,4 +1,4 @@
 -- name: create_user
 INSERT INTO users (username, password_hash, email)
-VALUES (%s, %s, %s)
+VALUES (%(username)s, %(password_hash)s, %(email)s)
 RETURNING user_id, username, email, created_at;
