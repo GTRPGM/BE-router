@@ -21,7 +21,6 @@ except Exception as e:
 
 
 # DB 연결 관리 Context Manager
-@contextmanager
 def get_db_cursor():
     """
     커넥션 풀에서 커넥션을 빌려오고,
@@ -29,20 +28,21 @@ def get_db_cursor():
     """
     conn = connection_pool.getconn()
     try:
-        yield conn.cursor(cursor_factory=extras.RealDictCursor)
+        cursor = conn.cursor(cursor_factory=extras.RealDictCursor)
+        yield cursor
         conn.commit()
     except Exception as e:
         conn.rollback()
         raise e
     finally:
-        connection_pool.getconn()
         connection_pool.putconn(conn)
 
+db_cursor_context = contextmanager(get_db_cursor)
 
 # 연결 테스트
 def check_db_connection():
     try:
-        with get_db_cursor() as cursor:
+        with db_cursor_context() as cursor:
             cursor.execute("SELECT 1")
             print("✅ DB 연결 상태 확인 완료")
     except Exception as e:

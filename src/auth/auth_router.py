@@ -28,16 +28,15 @@ class AuthHandler:
             login_data: LoginRequest,
             auth_service: AuthService = Depends(get_auth_service)
     ):
-        with get_db_cursor() as cursor:
-            # 서비스에 DTO 데이터 전달
-            auth_result = auth_service.authenticate_user(
-                login_data.username, login_data.password
-            )
+        # 서비스에 DTO 데이터 전달
+        auth_result = auth_service.authenticate_user(
+            login_data.username, login_data.password
+        )
 
-            return {
-                "data": auth_result,
-                "message": f"{login_data.username}님, 환영합니다!",
-            }
+        return {
+            "data": auth_result,
+            "message": f"{login_data.username}님, 환영합니다!",
+        }
 
     @auth_router.get(
         "/me",
@@ -86,8 +85,7 @@ class AuthHandler:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_id: str = payload.get("sub")
 
-            with get_db_cursor() as cursor:
-                auth_service.process_logout(user_id)
+            auth_service.process_logout(user_id)
 
             return {"data": None, "message": "성공적으로 로그아웃되었습니다."}
         except Exception:
