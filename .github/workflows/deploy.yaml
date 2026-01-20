@@ -133,11 +133,11 @@ jobs:
               -p 8010:8010 \
               -e DB_USER=${{ secrets.DB_USER }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e DB_PORT=${{ secrets.DB_PORT }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+              -e REMOTE_HOST=${{ secrets.REMOTE_HOST }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
               -e APP_PORT=${{ secrets.APP_PORT }} \
               -e APP_ENV=prod \
