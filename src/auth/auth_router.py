@@ -1,17 +1,16 @@
 from typing import Dict, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
-from jose import jwt, ExpiredSignatureError, JWTError
+from jose import jwt, ExpiredSignatureError
 
 from common.dtos.wrapped_response import WrappedResponse
 from common.utils.get_services import get_auth_service
 from configs.setting import ALGORITHM, SECRET_KEY
 from src.auth.auth_service import AuthService
-from src.auth.dtos.login_dtos import LoginRequest, Token  # 정의하신 DTO 임포트
-from src.configs.database import get_db_cursor
+from src.auth.dtos.login_dtos import LoginRequest, Token, TokenResponse
 
 auth_router = APIRouter(prefix="/auth", tags=["인증 및 로그인"])
 auth_scheme = HTTPBearer()
@@ -69,6 +68,29 @@ class AuthHandler:
             raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.")
         except Exception as e:
             raise HTTPException(status_code=401, detail="인증에 실패했습니다.")
+
+    @auth_router.post(
+        "/refresh",
+        summary="접근 토큰 갱신 요청",
+        response_model=WrappedResponse[TokenResponse],
+    )
+    def refresh_token(
+            self,
+            refresh_token: str = Body(..., embed=True),  # {"refresh_token": "..."} 형태
+            auth_service: AuthService = Depends(get_auth_service)
+    ):
+        """
+        액세스 토큰 만료 시 리프레시 토큰을 사용하여 토큰을 재발급합니다.
+        """
+        try:
+            # 서비스 메서드 호출
+            result = auth_service.refresh_access_token(refresh_token)
+            return {"data": result}
+        except ValueError as e:
+            # 서비스에서 발생한 ValueError를 401 에러로 변환
+            raise HTTPException(status_code=401, detail=str(e))
+        except Exception:
+            raise HTTPException(status_code=401, detail="토큰 갱신에 실패했습니다.")
 
 
     @auth_router.post("/logout")

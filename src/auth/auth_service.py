@@ -6,6 +6,7 @@ from jose import jwt
 from src.configs.redis_conn import redis_client
 from src.configs.setting import ALGORITHM, REFRESH_TOKEN_EXPIRE_DAYS, SECRET_KEY
 from utils.load_sql import load_sql
+from src.auth.dtos.login_dtos import TokenResponse
 
 from .utils.crypt_utils import verify_password
 from .utils.token_utils import create_access_token, create_refresh_token
@@ -70,7 +71,7 @@ class AuthService:
             },
         }
 
-    def refresh_access_token(self, refresh_token: str) -> Dict[str, str]:
+    def refresh_access_token(self, refresh_token: str) -> TokenResponse:
         """리프레시 토큰 검증 및 액세스 토큰 재발급"""
         try:
             payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -85,7 +86,7 @@ class AuthService:
             new_access = create_access_token(
                 data={"sub": user_id, "username": username}
             )
-            return {"access_token": new_access}
+            return TokenResponse(access_token=new_access)
 
         except Exception:
             raise HTTPException(

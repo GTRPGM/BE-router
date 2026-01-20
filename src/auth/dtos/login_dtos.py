@@ -14,9 +14,9 @@ class Token(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str = None
-    message: str
-    user_id: int = None
-    detail: str = None
+    # message: str
+    # user_id: int = None
+    # detail: str = None
 
 
 class RefreshTokenRequest(BaseModel):
