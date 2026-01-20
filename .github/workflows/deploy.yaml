@@ -42,6 +42,11 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:.
           uv run python -c "from src.configs.database import check_db_connection; check_db_connection()"
 
+      - name: Check REDIS Connection
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          uv run python -c "from src.configs.redis_conn import check_redis_connection; check_redis_connection()"
+
       - name: Server Smoke Test (Health Check)
         run: |
           export PYTHONPATH=$PYTHONPATH:.
