@@ -1,0 +1,139 @@
+name: GTRPGM BE router CI/CD
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      APP_HOST: "127.0.0.1"
+      APP_PORT: ${{ secrets.APP_PORT }}
+      APP_ENV: "local"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Check DB Connection
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          uv run python -c "from src.configs.database import check_db_connection; check_db_connection()"
+
+      - name: Server Smoke Test (Health Check)
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          # 1. 서버 실행 (reload 모드 없이 실행하는 것을 권장)
+          uv run python src/main.py > test_server.log 2>&1 &
+
+          # 2. 서버가 응답할 때까지 대기 (최대 10번 시도)
+          echo "Waiting for server to start..."
+          for i in {1..10}; do
+            if curl -s http://127.0.0.1:8010/ > /dev/null; then
+              echo "✅ Server is up and running!"
+              pkill -f "python src/main.py" || true
+              exit 0
+            fi
+            echo "Attempt $i: Server not ready yet... (waiting 3s)"
+            sleep 3
+          done
+
+          # 3. 10번 시도 후에도 안 되면 실패 처리
+          echo "❌ 서버 응답 테스트 실패. 로그를 출력합니다:"
+          cat test_server.log
+          exit 1
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. GitHub에 있는 코드를 GCP 서버의 /home/postelian/app/be-router 폴더로 전송
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          source: "."
+          target: "/home/${{ secrets.REMOTE_USER }}/app/be-router"
+          rm: true # 전송 전 target 폴더를 비워서 옛날 파일과 섞이지 않게 명시
+
+      - name: Build Docker Image
+        run: |
+          docker build -t be-router:latest .
+
+      # 2. 서버에 접속해서 빌드 및 배포 실행
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.REMOTE_USER }}/app/be-router
+
+            # 8010번 포트를 점유 중인 컨테이너가 있다면 강제 정리
+            echo "Cleaning up any container using port 8010..."
+            EXISTING_CONTAINER=$(docker ps -q --filter "publish=8010")
+            if [ ! -z "$EXISTING_CONTAINER" ]; then
+              echo "Stopping container: $EXISTING_CONTAINER"
+              docker stop $EXISTING_CONTAINER || true
+              docker rm $EXISTING_CONTAINER || true
+            fi
+
+            # 신규 이미지 빌드를 최우선으로 실행 (빌드 실패 시 기존 서버 영향 0)
+            echo "Building new Docker image..."
+            docker build -t be-router:latest .
+
+            docker stop be-router || true
+            docker rm be-router || true
+
+            # 빌드 성공 시에만 기존 컨테이너 이름 변경 (백업)
+            echo "Backing up old container..."
+            docker stop be-router-old || true
+            docker rm be-router-old || true
+            docker rename be-router be-router-old || true
+
+            # 새 컨테이너 실행
+            echo "Starting new container..."
+            docker run -d \
+              --name be-router \
+              -p 8010:8010 \
+              -e DB_USER=${{ secrets.DB_USER }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_PORT=${{ secrets.DB_PORT }} \
+              -e DB_NAME=${{ secrets.DB_NAME }} \
+              -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
+              -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+              -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
+              -e APP_PORT=${{ secrets.APP_PORT }} \
+              -e APP_ENV=prod \
+              be-router:latest
