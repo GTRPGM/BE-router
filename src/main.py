@@ -4,21 +4,29 @@ from starlette.middleware.cors import CORSMiddleware
 from src.configs.api_routers import API_ROUTERS
 from src.common.dtos.common_response import CustomJSONResponse
 from src.configs.logging_config import LOGGING_CONFIG
-from src.configs.setting import APP_ENV, APP_PORT
+from src.configs.setting import REMOTE_HOST, WEB_PORT, APP_ENV, APP_PORT
 
 app = FastAPI(
     title="GTRPGM BE Router",
     description="GTRPGM 주요 서비스를 제공하며, 마이크로서비스 라우팅을 담당합니다.",
     version="1.0.0",
     default_response_class=CustomJSONResponse,
+    servers=[
+        {"url": "/", "description": "Auto (Current Host)"},
+        {"url": f"http://localhost:{APP_PORT}", "description": "Local env"},
+        {"url": f"http://{REMOTE_HOST}:{APP_PORT}", "description": "Dev env"},
+    ]
 )
 
 # CORS 미들웨어 추가
 origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    f"http://localhost:{WEB_PORT}",
+    f"http://127.0.0.1:{WEB_PORT}",
     f"http://localhost:{APP_PORT}",
     f"http://127.0.0.1:{APP_PORT}",
+    f"http://{REMOTE_HOST}:{APP_PORT}",
+    f"http://{REMOTE_HOST}:{WEB_PORT}",
+    f"http://{REMOTE_HOST}",
 ]
 
 app.add_middleware(
