@@ -19,6 +19,7 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       APP_HOST: "127.0.0.1"
       APP_PORT: ${{ secrets.APP_PORT }}
+      WEB_PORT: ${{ secrets.WEB_PORT }}
       APP_ENV: "local"
 
     steps:
@@ -140,5 +141,6 @@ jobs:
               -e REMOTE_HOST=${{ secrets.REMOTE_HOST }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
               -e APP_PORT=${{ secrets.APP_PORT }} \
+              -e WEB_PORT=${{ secrets.WEB_PORT }} \
               -e APP_ENV=prod \
               be-router:latest
