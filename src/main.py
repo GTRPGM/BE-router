@@ -20,6 +20,7 @@ app = FastAPI(
 
 # CORS 미들웨어 추가
 origins = [
+    "http://35.216.98.244:8080",
     f"http://localhost:{WEB_PORT}",
     f"http://127.0.0.1:{WEB_PORT}",
     f"http://localhost:{APP_PORT}",
