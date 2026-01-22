@@ -29,8 +29,6 @@ origins = [
     f"http://{REMOTE_HOST}",
 ]
 
-print(f"ALLOWED ORIGINS: {origins}")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,  # 허용할 출처 목록
