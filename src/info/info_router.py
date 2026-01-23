@@ -18,7 +18,6 @@ security = HTTPBearer()
 
 @cbv(info_router)
 class InfoHandler:
-
     async def _proxy_request(self, method: str, path: str, token: str, params=None, json=None):
         """마이크로서비스로 요청을 전달하는 공통 비동기 메서드"""
         async with httpx.AsyncClient() as client:
