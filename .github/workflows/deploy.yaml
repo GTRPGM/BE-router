@@ -21,6 +21,7 @@ jobs:
       REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
       REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
       APP_HOST: "127.0.0.1"
       APP_PORT: ${{ secrets.APP_PORT }}
       WEB_PORT: ${{ secrets.WEB_PORT }}
@@ -142,6 +143,7 @@ jobs:
               -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
               -e REMOTE_HOST=${{ secrets.REMOTE_HOST }} \
               -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
+              -e ALGORITHM=${{ secrets.ALGORITHM }} \
               -e APP_PORT=${{ secrets.APP_PORT }} \
               -e WEB_PORT=${{ secrets.WEB_PORT }} \
               -e RULE_ENGINE_PORT=${{ secrets.RULE_ENGINE_PORT }} \
