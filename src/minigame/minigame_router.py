@@ -16,7 +16,7 @@ auth_scheme = HTTPBearer()
 @cbv(minigame_router)
 class MinigameRouter:
     @minigame_router.get(
-        "/minigame",
+        "/riddle",
         summary="GM과 수수께끼 미니게임을 진행합니다."
     )
     async def proxy_riddle(

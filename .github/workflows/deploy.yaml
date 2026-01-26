@@ -101,6 +101,8 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            APP_PORT=${{ secrets.APP_PORT }}
 
   deploy:
     needs: build-docker-image
