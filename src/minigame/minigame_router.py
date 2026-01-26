@@ -15,6 +15,8 @@ auth_scheme = HTTPBearer()
 
 @cbv(minigame_router)
 class MinigameRouter:
+    base_prefix = "/play"
+
     @minigame_router.get(
         "/riddle",
         summary="GM과 수수께끼 미니게임을 진행합니다."
@@ -29,7 +31,7 @@ class MinigameRouter:
 
         # 2. rule-engine 마이크로서비스 엔드포인트 호출
         user_id: str = payload.get("sub")
-        path = f"/play/riddle/{user_id}"
+        path = f"{self.base_prefix}/riddle/{user_id}"
 
         # 3. 스트리밍 중계 실행
         generator = await proxy_stream(path, token)
@@ -54,7 +56,7 @@ class MinigameRouter:
         user_id = payload.get("sub")
 
         # 2. rule-engine 마이크로서비스 경로 설정
-        path = f"/play/answer/{user_id}"
+        path = f"{self.base_prefix}/answer/{user_id}"
 
         # 3. proxy_request를 통해 rule-engine 마이크로서비스로 요청 전달
         response_data = await proxy_request(
