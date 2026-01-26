@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from typing import Dict
+
+from fastapi import FastAPI, HTTPException, status
 from starlette.middleware.cors import CORSMiddleware
 
-from src.configs.api_routers import API_ROUTERS
+from configs.database import check_db_connection
+from configs.redis_conn import check_redis_connection
 from src.common.dtos.common_response import CustomJSONResponse
+from src.configs.api_routers import API_ROUTERS
 from src.configs.logging_config import LOGGING_CONFIG
 from src.configs.setting import REMOTE_HOST, WEB_PORT, APP_ENV, APP_PORT
 
@@ -44,6 +48,21 @@ for router in API_ROUTERS:
 @app.get("/", description="서버 연결 확인", summary="테스트 - 서버 연결을 확인합니다.")
 def read_root():
     return {"message": "반갑습니다. GTRPGM 룰 엔진입니다!"}
+
+# health check
+@app.get("/health")
+def health_check() -> Dict[str, str]:
+    health_status = {"status": "ok", "db": "connected", "redis": "connected"}
+    try:
+        check_db_connection()
+        check_redis_connection()
+        return health_status
+    except Exception as e:
+        # 하나라도 실패하면 503 에러 반환
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"status": "error", "message": str(e)}
+        )
 
 
 if __name__ == "__main__":
