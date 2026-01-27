@@ -3,7 +3,7 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": True,
     "formatters": {
         "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
+            "()": "src.configs.color_hint_formatter.ColorHintFormatter",
             "fmt": "%(levelprefix)s %(message)s",
             "use_colors": True,
         },

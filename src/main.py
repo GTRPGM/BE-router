@@ -1,7 +1,11 @@
+import logging
+import traceback
 from typing import Dict
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from configs.database import check_db_connection
 from configs.redis_conn import check_redis_connection
@@ -9,6 +13,8 @@ from src.common.dtos.common_response import CustomJSONResponse
 from src.configs.api_routers import API_ROUTERS
 from src.configs.logging_config import LOGGING_CONFIG
 from src.configs.setting import REMOTE_HOST, WEB_PORT, APP_ENV, APP_PORT
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(
     title="GTRPGM BE Router",
@@ -21,6 +27,67 @@ app = FastAPI(
         {"url": f"http://{REMOTE_HOST}:{APP_PORT}", "description": "Dev env"},
     ]
 )
+
+@app.middleware("http")
+async def error_logging_middleware(request: Request, call_next):
+    # 이제 에러 로그는 핸들러가 담당하므로 미들웨어는 통과만 시킵니다.
+    response = await call_next(request)
+    return response
+
+
+# 1. 일반적인 모든 서버 에러 (500)
+@app.exception_handler(Exception)
+async def universal_exception_handler(request: Request, exc: Exception):
+    logger.error(f"🔥 Unexpected Error: {request.method} {request.url.path}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": "서버 내부 오류가 발생했습니다.",
+            "detail": str(exc),
+        },
+    )
+
+
+# 2. 의도된 HTTP 에러 (400, 401, 404, 503 등) - 중복 제거 및 통합
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(f"⚠️ HTTP {exc.status_code} Error: {request.method} {request.url.path}")
+    logger.error(f"Detail: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "status": "error",
+            "message": "요청 처리 중 오류가 발생했습니다.",
+            "detail": exc.detail,
+        },
+    )
+
+
+# 3. 데이터 검증 에러 (422)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    error_details = []
+    for error in errors:
+        loc = " -> ".join([str(x) for x in error.get("loc", [])])
+        msg = error.get("msg")
+        inp = error.get("input")
+        error_details.append(f"[{loc}] {msg} (Input: {inp})")
+
+    full_message = " | ".join(error_details)
+    logger.error(f"❌ Validation Error: {request.method} {request.url.path}")
+    logger.error(f"Detail: {full_message}")
+
+    return JSONResponse(
+        status_code=422,
+        content={
+            "status": "error",
+            "message": "입력값 검증에 실패했습니다.",
+            "detail": errors,
+        },
+    )
 
 # CORS 미들웨어 추가
 origins = [
