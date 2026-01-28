@@ -5,7 +5,7 @@ from fastapi_utils.cbv import cbv
 from jose import jwt
 from starlette.responses import StreamingResponse
 
-from configs.setting import SECRET_KEY, ALGORITHM
+from configs.setting import SECRET_KEY, ALGORITHM, RULE_ENGINE_URL
 from minigame.dtos.minigame_dtos import AnswerRequest
 from utils.proxy_request import proxy_request
 from utils.proxy_stream import proxy_stream
@@ -34,7 +34,7 @@ class MinigameRouter:
         path = f"{self.base_prefix}/riddle/{user_id}"
 
         # 3. 스트리밍 중계 실행
-        generator = await proxy_stream(path, token)
+        generator = await proxy_stream(RULE_ENGINE_URL, path, token)
 
         return StreamingResponse(
             generator,
@@ -61,6 +61,7 @@ class MinigameRouter:
         # 3. proxy_request를 통해 rule-engine 마이크로서비스로 요청 전달
         response_data = await proxy_request(
             method="POST",
+            base_url=RULE_ENGINE_URL,
             path=path,
             token=token,
             json=request.model_dump()

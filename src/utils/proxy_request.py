@@ -1,14 +1,13 @@
 import httpx
 
-from configs.setting import REMOTE_SERVICE_URL, REMOTE_HOST, RULE_ENGINE_PORT
 from fastapi import HTTPException, status
 
 
-async def proxy_request(method: str, path: str, token: str, params=None, json=None):
+async def proxy_request(method: str, base_url: str, path: str, token: str, params=None, json=None):
     """마이크로서비스로 요청을 전달하는 공통 비동기 메서드"""
     async with httpx.AsyncClient() as client:
         try:
-            url = f"http://{REMOTE_HOST}:{RULE_ENGINE_PORT}{path}"
+            url = f"{base_url}{path}"
             headers = {"Authorization": f"Bearer {token}"}
 
             response = await client.request(

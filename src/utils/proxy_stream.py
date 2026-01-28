@@ -1,12 +1,11 @@
 import httpx
 
-from configs.setting import REMOTE_SERVICE_URL, REMOTE_HOST, RULE_ENGINE_PORT
 from fastapi import HTTPException
 
 
-async def proxy_stream(path: str, token: str, params=None):
+async def proxy_stream(base_url: str, path: str, token: str, params=None):
     """마이크로서비스의 스트리밍 응답을 중계하는 메서드"""
-    url = f"http://{REMOTE_HOST}:{RULE_ENGINE_PORT}{path}"
+    url = f"{base_url}{path}"
     headers = {"Authorization": f"Bearer {token}"}
 
     # AsyncClient를 context manager로 열어 연결 유지
