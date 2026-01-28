@@ -6,8 +6,14 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: gtrpgm/be-router
+  # service settings
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+  PORT: ${{ vars.PORT}}
+  TAG: ${{ vars.TAG || 'latest' }}
+  # system settings
+  REGISTRY: ${{ vars.REGISTRY }}
+  ORG_NAME: ${{ vars.ORG_NAME }}
+  IMAGE_NAME: ${{ vars.REGISTRY }}/${{ vars.ORG_NAME }}/${{ vars.SERVICE_NAME }}
 
 jobs:
   build-and-test:
