@@ -4,27 +4,64 @@ from dotenv import load_dotenv
 
 load_dotenv(override=False)
 
-# DB 설정
+
+# 공통 설정
+REMOTE_HOST = os.getenv("REMOTE_HOST")
+
+# RDB 설정
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_PORT = int(os.getenv("DB_PORT"))
 DB_NAME = os.getenv("DB_NAME")
+
+DB_HOST = os.getenv("DB_HOST", REMOTE_HOST)
+DB_PORT = int(os.getenv("DB_PORT"))
+
 # REDIS
-REDIS_PORT = int(os.getenv("REDIS_PORT"))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+
+REDIS_HOST = os.getenv("REDIS_HOST", REMOTE_HOST)
+REDIS_PORT = os.getenv("REDIS_PORT")
+
 # LLM
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+
 # 원격 서버
-REMOTE_HOST = os.getenv("REMOTE_HOST")
 APP_HOST = os.getenv("APP_HOST")  # 운영 환경에서는 '0.0.0.0' 주입
 APP_PORT = int(os.getenv("APP_PORT"))
-RULE_ENGINE_PORT = int(os.getenv("RULE_ENGINE_PORT"))
 APP_ENV = os.getenv("APP_ENV")  # local, dev, prod 등
 
+# services
+BE_ROUTER_HOST = os.getenv("BE_ROUTER_HOST", REMOTE_HOST)
+BE_ROUTER_PORT = os.getenv("BE_ROUTER_PORT")
+BE_ROUTER_URL = f"http://{BE_ROUTER_HOST}:{BE_ROUTER_PORT}"
+
+GM_HOST = os.getenv("GM_HOST", REMOTE_HOST)
+GM_PORT = os.getenv("GM_PORT")
+GM_SERVICE_URL = f"http://{GM_HOST}:{GM_PORT}"
+
+SCENARIO_SERVICE_HOST = os.getenv("SCENARIO_SERVICE_HOST", REMOTE_HOST)
+SCENARIO_SERVICE_PORT = os.getenv("SCENARIO_SERVICE_PORT")
+SCENARIO_SERVICE_URL = f"http://{SCENARIO_SERVICE_HOST}:{SCENARIO_SERVICE_PORT}"
+
+STATE_MANAGER_HOST = os.getenv("STATE_MANAGER_HOST", REMOTE_HOST)
+STATE_MANAGER_PORT = os.getenv("STATE_MANAGER_PORT")
+STATE_MANAGER_URL = f"http://{STATE_MANAGER_HOST}:{STATE_MANAGER_PORT}"
+
+RULE_ENGINE_HOST = os.getenv("RULE_ENGINE_HOST", REMOTE_HOST)
+RULE_ENGINE_PORT = os.getenv("RULE_ENGINE_PORT")
+RULE_ENGINE_URL = f"http://{RULE_ENGINE_HOST}:{RULE_ENGINE_PORT}"
+
+LLM_GATEWAY_HOST = os.getenv("LLM_GATEWAY_HOST", REMOTE_HOST)
+LLM_GATEWAY_PORT = os.getenv("LLM_GATEWAY_PORT")
+LLM_GATEWAY_URL = f"http://{LLM_GATEWAY_HOST}:{LLM_GATEWAY_PORT}"
+
 # 프론트엔드
+WEB_HOST = os.getenv("WEB_HOST", REMOTE_HOST)
 WEB_PORT = os.getenv("WEB_PORT")
+WEB_URL = f"http://{WEB_HOST}:{WEB_PORT}"
+
 
 # 인증 - JWT 인증 관련 설정
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -35,5 +72,4 @@ REFRESH_TOKEN_EXPIRE_SECONDS = (
     REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
 )  # 7일 만료 (초단위)
 
-# 타 서비스(마이크로서비스) 기본 URL
-REMOTE_SERVICE_URL = f"http://{REMOTE_HOST}:{RULE_ENGINE_PORT}/info"
+
