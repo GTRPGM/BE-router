@@ -2,7 +2,9 @@ name: GTRPGM BE router CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "ops/Deploy"
   workflow_dispatch:
 
 env:
@@ -21,7 +23,7 @@ jobs:
     env:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_PORT: ${{ secrets.POSTGRES_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
@@ -83,41 +85,68 @@ jobs:
           cat test_server.log
           exit 1
 
-  build-docker-image:
+  build-and-push:
     needs: build-and-test
     runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
+      id-token: write
+
+    outputs:
+      image: ${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.TAG }}
+            type=sha,format=short
+
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             APP_PORT=${{ secrets.APP_PORT }}
 
   deploy:
-    needs: build-docker-image
-    runs-on: ubuntu-22.04
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      packages: read
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'nektos/act' }}
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docker-compose.yml
+          sparse-checkout-cone-mode: false
+
+      - name: Upload docker-compose.yml
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          source: docker-compose.yml
+          target: /opt/services/${{ env.SERVICE_NAME }}
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
@@ -125,38 +154,71 @@ jobs:
           username: ${{ secrets.REMOTE_USERNAME }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script: |
-            # 1. GHCR 로그인 (일회용 토큰 사용)
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # 2. 최신 이미지 Pull
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # 3. 기존 컨테이너 정리 (메모리 확보를 위해 선제적 제거)
+            set -e
+
             if [ "$(docker ps -aq -f name=be-router)" ]; then
                 echo "Stopping and removing existing container..."
                 docker stop be-router || true
                 docker rm be-router || true
             fi
-            
-            # 4. 새 컨테이너 실행
-            docker run -d \
-              --name be-router \
-              -p ${{ secrets.APP_PORT }}:${{ secrets.APP_PORT }} \
-              --restart unless-stopped \
-              -e DB_USER=${{ secrets.DB_USER }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e DB_PORT=${{ secrets.DB_PORT }} \
-              -e DB_NAME=${{ secrets.DB_NAME }} \
-              -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
-              -e REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-              -e REMOTE_HOST=${{ secrets.REMOTE_HOST }} \
-              -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
-              -e ALGORITHM=${{ secrets.ALGORITHM }} \
-              -e APP_PORT=${{ secrets.APP_PORT }} \
-              -e WEB_PORT=${{ secrets.WEB_PORT }} \
-              -e RULE_ENGINE_PORT=${{ secrets.RULE_ENGINE_PORT }} \
-              -e APP_ENV=prod \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
+
+            export DOCKER_CONFIG=$(mktemp -d)
+            trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            cd /opt/services/${{ env.SERVICE_NAME }}
+
+            export IMAGE_NAME=${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+
+            # --- Environment Variables from Secrets/Vars ---
+            export REMOTE_HOST="${{ secrets.REMOTE_HOST }}"
+
+            export APP_PORT=${{ secrets.APP_PORT }}
+
+            # Database Settings
+            export DB_USER="${{ secrets.DB_USER }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PORT="${{ secrets.DB_PORT }}"
+            export DB_NAME="${{ secrets.DB_NAME }}"
+
+            # Redis Settings
+            export REDIS_PORT="${{ secrets.REDIS_PORT }}"
+            export REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+
+            # External Service
+            export BE_ROUTER_HOST=${{ vars.BE_ROUTER_HOST }}
+            export BE_ROUTER_PORT=${{ vars.BE_ROUTER_PORT }}
+
+            export GM_HOST=${{ vars.GM_HOST }}
+            export GM_PORT=${{ vars.GM_PORT }}
+
+            export STATE_MANAGER_HOST=${{ vars.STATE_MANAGER_HOST }}
+            export STATE_MANAGER_PORT=${{ vars.STATE_MANAGER_PORT }}
+
+            export SCENARIO_SERVICE_HOST=${{ vars.SCENARIO_SERVICE_HOST }}
+            export SCENARIO_SERVICE_PORT=${{ vars.SCENARIO_SERVICE_PORT }}
+
+            export RULE_ENGINE_HOST=${{ vars.RULE_ENGINE_HOST }}
+            export RULE_ENGINE_PORT=${{ vars.RULE_ENGINE_PORT }}
+
+            export LLM_GATEWAY_HOST=${{ vars.LLM_GATEWAY_HOST }} 
+            export LLM_GATEWAY_PORT=${{ vars.LLM_GATEWAY_PORT }} 
+
+            export WEB_HOST=${{ vars.WEB_HOST }}
+            export WEB_PORT=${{ vars.WEB_PORT }}
+
+            export SECRET_KEY=${{ secrets.SECRET_KEY }}
+            export ALGORITHM=${{ secrets.ALGORITHM }}
+
+            # Logic Settings
+
+            docker compose pull
+            docker compose up -d
+
+            docker image prune -f
+
             # 5. 미사용 이미지 정리
             docker image prune -f
