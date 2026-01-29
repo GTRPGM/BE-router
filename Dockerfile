@@ -1,7 +1,7 @@
 # 1단계: 빌드 스테이지
 FROM python:3.11-slim-bookworm AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:0.5.7 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 ENV UV_PROJECT_ENVIRONMENT="/usr/local"
 WORKDIR /app
