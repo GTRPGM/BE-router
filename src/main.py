@@ -1,24 +1,29 @@
-import logging
 from contextlib import asynccontextmanager
 from typing import Dict
 
-from fastapi import FastAPI, HTTPException, Request, status
-from starlette.middleware.cors import CORSMiddleware
-
+import httpx
 from configs.database import check_db_connection
+from configs.http_client import http_holder
 from configs.redis_conn import check_redis_connection
 from exceptions import init_exception_handlers
+from fastapi import FastAPI, HTTPException, Request, status
 from src.common.dtos.common_response import CustomJSONResponse
 from src.configs.api_routers import API_ROUTERS
 from src.configs.logging_config import LOGGING_CONFIG
 from src.configs.setting import REMOTE_HOST, WEB_PORT, APP_ENV, APP_PORT
-
-logger = logging.getLogger("uvicorn.error")
+from starlette.middleware.cors import CORSMiddleware
+from utils.logger import info
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 서버가 시작될 때 실행
+    info("HTTP 클라이언트를 구성합니다...")
+    http_holder.client = httpx.AsyncClient(
+        timeout=httpx.Timeout(10.0),
+        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
+    )
+
     print("\n" + "⭐" * 40)
     print(f"  Swagger UI: http://127.0.0.1:{APP_PORT}/docs")
     print(f"  ReDoc:      http://127.0.0.1:{APP_PORT}/redoc")
@@ -26,8 +31,10 @@ async def lifespan(app: FastAPI):
 
     yield  # 서버가 동작하는 지점
 
-    # 서버가 종료될 때 실행 (필요 시 작성)
-    print("BE router 서비스 종료 중...")
+    # 서버가 종료될 때 실행
+    await http_holder.client.aclose()
+    info("HTTP 클라이언트 종료 중...")
+    info("BE router 종료 중...")
 
 app = FastAPI(
     title="GTRPGM BE Router",

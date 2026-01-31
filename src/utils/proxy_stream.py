@@ -1,5 +1,5 @@
 import httpx
-
+from configs.http_client import http_holder
 from fastapi import HTTPException
 
 
@@ -8,27 +8,22 @@ async def proxy_stream(base_url: str, path: str, token: str, params=None):
     url = f"{base_url}{path}"
     headers = {"Authorization": f"Bearer {token}"}
 
-    # AsyncClient를 context manager로 열어 연결 유지
-    client = httpx.AsyncClient()
+    client = http_holder.client
+    if not client:
+        raise HTTPException(status_code=503, detail="HTTP 클라이언트가 준비되지 않았습니다.")
 
-    try:
-        # 1. 원격 서버로 스트림 요청 시작
-        # generator 함수를 정의하여 StreamingResponse에 전달
-        async def stream_generator():
-            try:
-                async with client.stream("GET", url, headers=headers, params=params, timeout=None) as response:
-                    if response.status_code >= 400:
-                        # 에러 발생 시 에러 메시지 한 번 출력 후 종료
-                        yield f"data: Error {response.status_code}\n\n".encode()
-                        return
+    # 스트림 전용 제너레이터 정의
+    async def stream_generator():
+        try:
+            # 공용 클라이언트의 .stream()을 사용 (timeout=None은 스트리밍 유지용)
+            async with client.stream("GET", url, headers=headers, params=params, timeout=None) as response:
+                if response.status_code >= 400:
+                    yield f"연결 오류 {response.status_code}".encode()
+                    return
 
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
-            finally:
-                await client.aclose()  # 모든 스트리밍 종료 후 클라이언트 닫기
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+        except httpx.RequestError as exc:
+            yield f"네트워크 오류: {str(exc)}".encode()
 
-        return stream_generator()
-
-    except Exception as exc:
-        await client.aclose()
-        raise HTTPException(status_code=503, detail=f"스트리밍 연결 실패: {exc}")
+    return stream_generator()
