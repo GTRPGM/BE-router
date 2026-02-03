@@ -7,6 +7,7 @@ from starlette.responses import StreamingResponse
 
 from configs.setting import SECRET_KEY, ALGORITHM, RULE_ENGINE_URL
 from minigame.dtos.minigame_dtos import AnswerRequest
+from minigame.minigame_service import get_game_tip_sentence
 from utils.proxy_request import proxy_request
 from utils.proxy_stream import proxy_stream
 
