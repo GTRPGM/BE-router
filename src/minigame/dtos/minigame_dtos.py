@@ -12,6 +12,10 @@ class AnswerRequest(BaseModel):
         description="사용자가 입력한 수수께끼 정답 후보",
     )
     current_attempt: Optional[int] = Field(default=None, description="현재 클라이언트상의 시도 횟수")
+    flag: str = Field(
+        default="RIDDLE",
+        description="정답을 제출하는 문제의 유형. - 'RIDDLE' | 'QUIZ' ",
+    )
 
 class AnswerResponse(BaseModel):
     result: str
