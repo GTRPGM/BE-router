@@ -7,7 +7,7 @@ from fastapi_utils.cbv import cbv
 from configs.setting import GM_SERVICE_URL
 from utils.proxy_request import proxy_request
 
-gm_router = APIRouter(prefix="/api/v1/game", tags=["GM 서비스 중계"])
+gm_router = APIRouter(prefix="/gm", tags=["GM 서비스 중계"])
 security = HTTPBearer()
 
 @cbv(gm_router)
@@ -20,6 +20,4 @@ class GmRouter:
         summary="게임 세션 이력을 조회합니다."
     )
     async def get_scenario(self, session_id: str, auth: HTTPAuthorizationCredentials = Depends(security)):
-        print(GM_SERVICE_URL)
-        print(f"{self.base_prefix}/history/{session_id}")
-        return await proxy_request("GET", GM_SERVICE_URL, f"{self.base_prefix}/history/{session_id}", auth.credentials)
+        return await proxy_request("GET", GM_SERVICE_URL, f"/api/v1{self.base_prefix}/history/{session_id}", auth.credentials)

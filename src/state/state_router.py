@@ -52,6 +52,5 @@ class StateRouter:
         summary="시퀀스 상세 정보를 조회합니다."
     )
     async def get_sequence_details(self, session_id: str, auth: HTTPAuthorizationCredentials = Depends(security)):
-        print(f"{self.base_prefix}/session/{session_id}/sequence/details")
         return await proxy_request('GET', STATE_MANAGER_URL, f"{self.base_prefix}/session/{session_id}/sequence/details",  auth.credentials)
 
