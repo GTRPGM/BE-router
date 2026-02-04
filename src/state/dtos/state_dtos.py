@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional, Union, Annotated, Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, BeforeValidator
+from pydantic import BaseModel, ConfigDict, BeforeValidator, Field
 
 from src.utils.parse_json import parse_json
 
@@ -23,6 +23,27 @@ class FullPlayerState(BaseModel):
     player: PlayerStateResponse
     player_npc_relations: List[NPCRelation]
     model_config = ConfigDict(from_attributes=True)
+
+class SessionStartRequest(BaseModel):
+    """세션 시작 요청"""
+
+    scenario_id: str = Field(..., description="시나리오 UUID")
+    current_act: int = Field(default=1, description="시작 Act", ge=1)
+    current_sequence: int = Field(default=1, description="시작 Sequence", ge=1)
+    location: str = Field(default="Starting Town", description="시작 위치")
+    user_id: Optional[int] = Field(default=None, description="외부 시스템 사용자 ID")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "scenario_id": "550e8400-e29b-41d4-a716-446655440000",
+                "current_act": 1,
+                "current_sequence": 1,
+                "location": "Starting Town",
+                "user_id": 12345,
+            }
+        }
+    )
 
 class SessionInfo(BaseModel):
     session_id: Union[str, UUID]

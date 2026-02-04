@@ -7,7 +7,7 @@ from fastapi_utils.cbv import cbv
 
 from common.dtos.wrapped_response import WrappedResponse
 from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM
-from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo
+from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest
 from utils.proxy_request import proxy_request
 
 state_router = APIRouter(prefix="/state", tags=["게임 상태 중계"])
@@ -25,8 +25,8 @@ class StateRouter:
         response_model=WrappedResponse[SessionInfo],
         summary="게임 시작 - 사용자 게임 세션을 생성합니다."
     )
-    async def start_session(self, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials)
+    async def start_session(self, request: SessionStartRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials, json=request.model_dump())
 
 
     # 사용자 세션 목록 조회
