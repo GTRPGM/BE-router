@@ -21,12 +21,12 @@ class StateRouter:
     # Todo: 사용자 게임 세션 생성 - state manager api 추가 확인 후 작업
     # 사용자 게임 세션 생성
     @state_router.post(
-        "/session/create", # 임시 라우트 경로
+        "/session/start", # 임시 라우트 경로
         response_model=WrappedResponse[SessionInfo],
-        summary="사용자 게임 세션을 생성합니다.(개발중)"
+        summary="게임 시작 - 사용자 게임 세션을 생성합니다."
     )
-    async def add_session(self, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/create", auth.credentials)
+    async def start_session(self, auth: HTTPAuthorizationCredentials = Depends(security)):
+        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials)
 
 
     # 사용자 세션 목록 조회
