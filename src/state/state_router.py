@@ -17,12 +17,21 @@ security = HTTPBearer()
 class StateRouter:
     base_prefix = "/state"
 
-    # 황성화 세션 목록 조회
+    # Todo: 사용자 게임 세션 생성 - state manager api 추가 확인 후 작업
+    @state_router.post(
+        "/session/create", # 임시 라우트 경로
+        response_model=WrappedResponse[SessionInfo],
+        summary="사용자 게임 세션을 생성합니다.(개발중)"
+    )
+    async def add_session(self, auth: HTTPAuthorizationCredentials = Depends(security)):
+        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/create", auth.credentials)
+
     @state_router.get(
         "/sessions/active",
         response_model=WrappedResponse[List[SessionInfo]],
-        summary="활성화 세션 목록을 조회합니다."
+        summary="사용자의 활성화 세션 목록을 조회합니다.(수정중)"
     )
+    # Fixme: 황성화 세션 목록 조회 - user_id 추가 전달(state manager api request 모델 새로 추가 예정)
     async def get_sessions(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         return await proxy_request("GET", STATE_MANAGER_URL, f"{self.base_prefix}/sessions/active", auth.credentials)
 
