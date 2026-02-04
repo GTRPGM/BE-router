@@ -27,6 +27,7 @@ class FullPlayerState(BaseModel):
 class SessionInfo(BaseModel):
     session_id: Union[str, UUID]
     scenario_id: Union[str, UUID]
+    user_id: Optional[int] = None  # 외부 시스템 사용자 식별자 (Optional)
     player_id: Optional[Union[str, UUID]] = None
 
     # 숫자 카운터
