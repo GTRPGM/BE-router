@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, BeforeValidator, Field
 
+from common.dtos.pagination_meta import PaginationMeta
 from src.utils.parse_json import parse_json
 
 
@@ -50,7 +51,6 @@ class SessionStartRequest(BaseModel):
                 "current_act": 1,
                 "current_sequence": 1,
                 "location": "Starting Town",
-                "user_id": 12345,
             }
         }
     )
@@ -141,3 +141,13 @@ class SequenceDetailInfo(BaseModel):
     player_npc_relations: List[PlayerNPCRelationInfo] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SessionResponse(BaseModel):
+    user_id: int
+    session_id: str
+    created_at: datetime
+
+class PaginatedSessionResponse(BaseModel):
+    sessions: List[SessionResponse]
+    meta: PaginationMeta

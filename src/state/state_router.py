@@ -1,13 +1,14 @@
 from typing import List
 from jose import jwt
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
 
 from common.dtos.wrapped_response import WrappedResponse
-from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM
-from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest, ScenarioInfo
+from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM, RULE_ENGINE_URL
+from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest, ScenarioInfo, \
+    PaginatedSessionResponse
 from utils.proxy_request import proxy_request
 
 state_router = APIRouter(prefix="/state", tags=["게임 상태 중계"])
@@ -45,20 +46,27 @@ class StateRouter:
 
     # 사용자 세션 목록 조회
     @state_router.get(
-        "/sessions/user",
-        response_model = WrappedResponse[List[SessionInfo]],
+        "/session/list",
+        response_model = WrappedResponse[PaginatedSessionResponse],
         summary="사용자 활성 세션 목록을 조회합니다."
     )
-    async def get_sessions_by_user_id(self, auth: HTTPAuthorizationCredentials = Depends(security)):
+    async def get_sessions_by_user_id(
+            self,
+            skip: int = Query(0, description="페이지네이션: 건너뛸 항목 수", ge=0),
+            limit: int = Query(10, description="페이지네이션: 한 번에 가져올 항목 수", ge=1, le=100),
+            is_deleted: bool = Query(False, description="삭제된 세션 포함 여부 (true: 삭제됨, false: 활성 상태)"),
+            auth: HTTPAuthorizationCredentials = Depends(security)
+    ):
         token = auth.credentials
         # 1. 토큰 복호화 및 유효성 검증
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: str = payload.get("sub") # 조회할 사용자의 고유 ID
 
+        print(f"/session/list?user_id={user_id}&skip={skip}&limit={limit}&is_deleted={is_deleted}")
         return await proxy_request(
             "GET",
-            STATE_MANAGER_URL,
-        f"{self.base_prefix}/sessions/user/{user_id}",
+            RULE_ENGINE_URL,
+        f"/session/list?user_id={user_id}&skip={skip}&limit={limit}&is_deleted={is_deleted}",
             auth.credentials
         )
 
