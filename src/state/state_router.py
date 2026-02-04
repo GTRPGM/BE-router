@@ -35,7 +35,12 @@ class StateRouter:
         summary="게임 시작 - 사용자 게임 세션을 생성합니다."
     )
     async def start_session(self, request: SessionStartRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials, json=request.model_dump())
+        token = auth.credentials
+        # 1. 토큰 복호화 및 유효성 검증
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        params = {**request.model_dump(), "user_id": user_id}
+        return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials, json=params)
 
 
     # 사용자 세션 목록 조회

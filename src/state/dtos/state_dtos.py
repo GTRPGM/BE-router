@@ -41,7 +41,7 @@ class SessionStartRequest(BaseModel):
     current_act: int = Field(default=1, description="시작 Act", ge=1)
     current_sequence: int = Field(default=1, description="시작 Sequence", ge=1)
     location: str = Field(default="Starting Town", description="시작 위치")
-    user_id: Optional[int] = Field(default=None, description="외부 시스템 사용자 ID")
+    # user_id: Optional[int] = Field(default=None, description="외부 시스템 사용자 ID")
 
     model_config = ConfigDict(
         json_schema_extra={
