@@ -28,7 +28,7 @@ class InfoHandler:
         summary="아이템 조회"
     )
     async def read_items(self, request_data: ItemRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/items", auth.credentials, json=request_data.dict())
+        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/items", auth.credentials, json=request_data.model_dump())
 
     # --- 2. 적 정보 조회 (목록) ---
     @info_router.post(
@@ -37,7 +37,7 @@ class InfoHandler:
         summary = "적 정보 조회(목록)"
     )
     async def read_enemies(self, request_data: EnemyRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/enemies", auth.credentials, json=request_data.dict())
+        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/enemies", auth.credentials, json=request_data.model_dump())
 
     @info_router.get(
         "/enemies/{enemy_id}",
@@ -54,7 +54,7 @@ class InfoHandler:
         summary="NPC 정보 조회 (목록)"
     )
     async def read_npcs(self, request_data: NpcRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/npcs", auth.credentials, json=request_data.dict())
+        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/npcs", auth.credentials, json=request_data.model_dump())
 
     @info_router.get(
         "/npc/{npc_id}",
@@ -72,7 +72,7 @@ class InfoHandler:
     )
     async def read_personalities(self, request_data: PersonalityRequest,
                                  auth: HTTPAuthorizationCredentials = Depends(security)):
-        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/personalities", auth.credentials, json=request_data.dict())
+        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/personalities", auth.credentials, json=request_data.model_dump())
 
     # --- 5. 월드 정보 조회 (GET Query Params) ---
     @info_router.get(

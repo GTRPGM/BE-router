@@ -10,7 +10,7 @@ from minigame.dtos.minigame_dtos import AnswerRequest
 from utils.proxy_request import proxy_request
 from utils.proxy_stream import proxy_stream
 
-minigame_router = APIRouter(prefix="/minigame", tags=["미니게임 - 수수께끼"])
+minigame_router = APIRouter(prefix="/minigame", tags=["미니게임"])
 auth_scheme = HTTPBearer()
 
 @cbv(minigame_router)

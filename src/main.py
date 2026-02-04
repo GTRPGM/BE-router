@@ -10,7 +10,7 @@ from exceptions import init_exception_handlers
 from src.common.dtos.common_response import CustomJSONResponse
 from src.configs.api_routers import API_ROUTERS
 from src.configs.logging_config import LOGGING_CONFIG
-from src.configs.setting import REMOTE_HOST, WEB_PORT, APP_ENV, APP_PORT
+from src.configs.setting import REMOTE_HOST, APP_ENV, APP_PORT
 from src.configs.origins import origins
 from utils.lifespan_handlers import startup_event_handler, shutdown_event_handler
 
