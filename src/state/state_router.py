@@ -7,7 +7,7 @@ from fastapi_utils.cbv import cbv
 
 from common.dtos.wrapped_response import WrappedResponse
 from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM
-from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest
+from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest, ScenarioInfo
 from utils.proxy_request import proxy_request
 
 state_router = APIRouter(prefix="/state", tags=["게임 상태 중계"])
@@ -18,7 +18,16 @@ security = HTTPBearer()
 class StateRouter:
     base_prefix = "/state"
 
-    # Todo: 사용자 게임 세션 생성 - state manager api 추가 확인 후 작업
+    # 시나리오 조회
+    @state_router.get(
+        "/scenarios",
+        response_model = WrappedResponse[List[ScenarioInfo]],
+        summary="시나리오 조회 - 게임 시작에 필요한 scenario_id를 가져올 수 있습니다."
+    )
+    async def get_scenarios(self, auth: HTTPAuthorizationCredentials = Depends(security)):
+        return await proxy_request("GET", STATE_MANAGER_URL, f"{self.base_prefix}/scenarios", auth.credentials)
+
+
     # 사용자 게임 세션 생성
     @state_router.post(
         "/session/start", # 임시 라우트 경로
@@ -48,6 +57,7 @@ class StateRouter:
             auth.credentials
         )
 
+    # 전체 활성화 세션 목록 조회
     @state_router.get(
         "/sessions/active",
         response_model=WrappedResponse[List[SessionInfo]],
@@ -57,7 +67,7 @@ class StateRouter:
         return await proxy_request("GET", STATE_MANAGER_URL, f"{self.base_prefix}/sessions/active", auth.credentials)
 
 
-    # 세션 조회
+    # 세션 정보 조회
     @state_router.get(
         "/session/{session_id}",
         response_model=WrappedResponse[SessionInfo],

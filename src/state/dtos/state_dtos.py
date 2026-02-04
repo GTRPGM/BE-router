@@ -24,6 +24,16 @@ class FullPlayerState(BaseModel):
     player_npc_relations: List[NPCRelation]
     model_config = ConfigDict(from_attributes=True)
 
+class ScenarioInfo(BaseModel):
+    """조회용 정보"""
+
+    scenario_id: Union[str, UUID]
+    title: str
+    description: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
 class SessionStartRequest(BaseModel):
     """세션 시작 요청"""
 
