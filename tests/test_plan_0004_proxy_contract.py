@@ -9,7 +9,7 @@ os.environ.setdefault("APP_PORT", "8010")
 os.environ.setdefault("GM_PORT", "8020")
 os.environ.setdefault("REMOTE_HOST", "localhost")
 
-from gm.dtos.gm_dtos import UserInput
+from gm.dtos.gm_dtos import NpcTurnInput, SummaryInput, UserInput
 from gm.gm_routers import GmRouter
 from utils import proxy_request as proxy_module
 
@@ -96,3 +96,57 @@ def test_gm_router_turn_keeps_payload_shape(monkeypatch):
     assert called["method"] == "POST"
     assert called["path"] == "/api/v1/game/turn"
     assert called["json"] == {"session_id": "s1", "content": "do something"}
+
+
+def test_gm_router_npc_turn_keeps_payload_shape(monkeypatch):
+    router = GmRouter()
+    auth = HTTPAuthorizationCredentials(scheme="Bearer", credentials="jwt")
+    req = NpcTurnInput(session_id="s2")
+    called = {}
+
+    async def _fake_proxy(method, base_url, path, token=None, params=None, json=None):
+        called.update(
+            {
+                "method": method,
+                "base_url": base_url,
+                "path": path,
+                "token": token,
+                "json": json,
+            }
+        )
+        return {"ok": True}
+
+    monkeypatch.setattr("gm.gm_routers.proxy_request", _fake_proxy)
+    out = asyncio.run(router.play_npc_turn(req, auth))
+
+    assert out == {"ok": True}
+    assert called["method"] == "POST"
+    assert called["path"] == "/api/v1/game/npc-turn"
+    assert called["json"] == {"session_id": "s2"}
+
+
+def test_gm_router_summary_keeps_payload_shape(monkeypatch):
+    router = GmRouter()
+    auth = HTTPAuthorizationCredentials(scheme="Bearer", credentials="jwt")
+    req = SummaryInput(session_id="s3")
+    called = {}
+
+    async def _fake_proxy(method, base_url, path, token=None, params=None, json=None):
+        called.update(
+            {
+                "method": method,
+                "base_url": base_url,
+                "path": path,
+                "token": token,
+                "json": json,
+            }
+        )
+        return {"ok": True}
+
+    monkeypatch.setattr("gm.gm_routers.proxy_request", _fake_proxy)
+    out = asyncio.run(router.get_summary(req, auth))
+
+    assert out == {"ok": True}
+    assert called["method"] == "POST"
+    assert called["path"] == "/api/v1/game/summary"
+    assert called["json"] == {"session_id": "s3"}
