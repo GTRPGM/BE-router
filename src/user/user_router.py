@@ -71,7 +71,7 @@ class UserHandler:
 
 
     @user_router.delete(
-        "/delete/", response_model=WrappedResponse[int], summary="회윈 탈퇴"
+        "/delete", response_model=WrappedResponse[int], summary="회윈 탈퇴"
     )
     async def delete_user(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
