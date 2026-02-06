@@ -3,10 +3,13 @@ from configs.http_client import http_holder
 from fastapi import HTTPException, status
 
 
-async def proxy_request(method: str, base_url: str, path: str, token: str, params=None, json=None):
+async def proxy_request(method: str, base_url: str, path: str, token: str = None, params=None, json=None):
     """마이크로서비스로 요청을 전달하는 공통 비동기 메서드"""
     url = f"{base_url}{path}"
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {}
+
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
 
     client = http_holder.client
     if not client:

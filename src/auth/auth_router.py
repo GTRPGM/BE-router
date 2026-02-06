@@ -28,7 +28,7 @@ class AuthHandler:
             auth_service: AuthService = Depends(get_auth_service)
     ):
         # 서비스에 DTO 데이터 전달
-        auth_result = auth_service.authenticate_user(
+        auth_result = await auth_service.authenticate_user(
             login_data.username, login_data.password
         )
 
@@ -57,7 +57,7 @@ class AuthHandler:
                 raise ValueError("유효하지 않은 토큰이 제공되었습니다.")
 
             # 2. 서비스 계층에서 유저 정보 조회
-            user_info = auth_service.get_current_user_info(user_id)
+            user_info = await auth_service.get_current_user_info(user_id)
 
             return {
                 "data": user_info,
@@ -74,7 +74,7 @@ class AuthHandler:
         summary="접근 토큰 갱신 요청",
         response_model=WrappedResponse[TokenResponse],
     )
-    def refresh_token(
+    async def refresh_token(
             self,
             refresh_token: str = Body(..., embed=True),  # {"refresh_token": "..."} 형태
             auth_service: AuthService = Depends(get_auth_service)
@@ -84,7 +84,7 @@ class AuthHandler:
         """
         try:
             # 서비스 메서드 호출
-            result = auth_service.refresh_access_token(refresh_token)
+            result = await auth_service.refresh_access_token(refresh_token)
             return {"data": result}
         except ValueError as e:
             # 서비스에서 발생한 ValueError를 401 에러로 변환
@@ -107,7 +107,7 @@ class AuthHandler:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_id: str = payload.get("sub")
 
-            auth_service.process_logout(user_id)
+            await auth_service.process_logout(user_id)
 
             return {"data": None, "message": "성공적으로 로그아웃되었습니다."}
         except Exception:

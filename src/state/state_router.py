@@ -3,7 +3,6 @@ from typing import List
 from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
-from jose import jwt
 
 from common.dtos.wrapped_response import WrappedResponse
 from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM, RULE_ENGINE_URL

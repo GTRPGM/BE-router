@@ -20,7 +20,7 @@ class AuthService:
         self.get_user_by_username_sql = load_sql("auth", "get_user_by_username")
         self.get_user_for_auth_sql = load_sql("auth", "get_user_for_auth")
 
-    def signup(self, username: str, hashed_password: str, email: str):
+    async def signup(self, username: str, hashed_password: str, email: str):
         try:
             params = {
                 "username": username,
@@ -35,7 +35,7 @@ class AuthService:
             # 중복 유저 등 예외 처리
             raise HTTPException(status_code=400, detail="이미 존재하는 사용자입니다.")
 
-    def authenticate_user(self, username: str, password: str) -> Dict[str, Any]:
+    async def authenticate_user(self, username: str, password: str) -> Dict[str, Any]:
         """사용자 인증 및 토큰 세트 발행 (Redis 저장 포함)"""
         # SQL은 파일에서 읽어온다고 가정하거나, 일단 문자열로 정의된 상수를 사용합니다.
         self.cursor.execute(
@@ -71,7 +71,7 @@ class AuthService:
             },
         }
 
-    def refresh_access_token(self, refresh_token: str) -> TokenResponse:
+    async def refresh_access_token(self, refresh_token: str) -> TokenResponse:
         """리프레시 토큰 검증 및 액세스 토큰 재발급"""
         try:
             payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -93,7 +93,7 @@ class AuthService:
                 status_code=401, detail="인증이 만료되었습니다. 다시 로그인해주세요."
             )
 
-    def get_current_user_info(self, user_id: str) -> Dict[str, Any]:
+    async def get_current_user_info(self, user_id: str) -> Dict[str, Any]:
         """토큰에서 추출한 user_id로 사용자 정보를 조회합니다."""
         self.cursor.execute(
             self.get_user_by_id_sql,
@@ -116,6 +116,6 @@ class AuthService:
 
         return user
 
-    def process_logout(self, user_id: str):
+    async def process_logout(self, user_id: str):
         """Redis에서 세션 제거"""
         redis_client.delete(f"refresh_token:{user_id}")
