@@ -26,11 +26,27 @@ async def proxy_request(method: str, base_url: str, path: str, token: str = None
         )
 
         if response.status_code >= 400:
+            detail = "원격 서비스 오류"
+            try:
+                body = response.json()
+                if isinstance(body, dict):
+                    detail = (
+                        body.get("detail")
+                        or body.get("message")
+                        or (body.get("data", {}) or {}).get("detail")
+                        or detail
+                    )
+            except Exception:
+                if response.text:
+                    detail = response.text
             raise HTTPException(
                 status_code=response.status_code,
-                detail=response.json().get("detail", "원격 서비스 오류"),
+                detail=detail,
             )
-        return response.json()
+        try:
+            return response.json()
+        except Exception:
+            return {"raw": response.text}
 
     except httpx.RequestError as exc:
         raise HTTPException(
