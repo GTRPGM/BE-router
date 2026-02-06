@@ -22,7 +22,7 @@ async def proxy_request(method: str, base_url: str, path: str, token: str = None
             headers=headers,
             params=params,
             json=json,
-            timeout=10.0
+            timeout=60.0,
         )
 
         if response.status_code >= 400:

@@ -10,9 +10,9 @@ from exceptions import init_exception_handlers
 from src.common.dtos.common_response import CustomJSONResponse
 from src.configs.api_routers import API_ROUTERS
 from src.configs.logging_config import LOGGING_CONFIG
-from src.configs.setting import REMOTE_HOST, APP_ENV, APP_PORT
 from src.configs.origins import origins
-from utils.lifespan_handlers import startup_event_handler, shutdown_event_handler
+from src.configs.setting import APP_ENV, APP_HOST, APP_PORT, REMOTE_HOST
+from utils.lifespan_handlers import shutdown_event_handler, startup_event_handler
 
 
 @asynccontextmanager
@@ -74,13 +74,13 @@ def health_check() -> Dict[str, str]:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={"status": "error", "message": str(e)}
-        )
+        ) from e
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    effective_host = "127.0.0.1" if APP_ENV == "local" else "0.0.0.0"
+    effective_host = APP_HOST or ("127.0.0.1" if APP_ENV == "local" else "0.0.0.0")
 
     LOGGING_CONFIG["handlers"]["default"]["stream"] = "ext://sys.stdout"
     LOGGING_CONFIG["handlers"]["access"]["stream"] = "ext://sys.stdout"

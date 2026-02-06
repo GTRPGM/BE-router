@@ -29,13 +29,20 @@ class UserHandler:
     @user_router.post(
         "/create", response_model=WrappedResponse[UserInfo], summary="회원 가입"
     )
-    async def create_user(self, request_data: UserCreateRequest):
-        user_data = request_data.model_dump(exclude={"password"})
-        params = {
-            **user_data,
-            "password_hash": get_password_hash(request_data.password),
+    async def create_user(
+        self,
+        request_data: UserCreateRequest,
+        auth_service: AuthService = Depends(get_auth_service),
+    ):
+        created = await auth_service.signup(
+            username=request_data.username,
+            hashed_password=get_password_hash(request_data.password),
+            email=request_data.email,
+        )
+        return {
+            "data": created,
+            "message": f"{request_data.username}님, 가입을 환영합니다!",
         }
-        return await proxy_request("POST", RULE_ENGINE_URL, f"{self.base_prefix}/create", None, json=params)
 
     @user_router.put(
         "/update", response_model=WrappedResponse[UserInfo], summary="회원 정보 수정"
