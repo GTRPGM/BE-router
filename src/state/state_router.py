@@ -1,14 +1,15 @@
 from typing import List
-from jose import jwt
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
+from jose import jwt
 
 from common.dtos.wrapped_response import WrappedResponse
 from configs.setting import STATE_MANAGER_URL, SECRET_KEY, ALGORITHM, RULE_ENGINE_URL
 from state.dtos.state_dtos import FullPlayerState, SessionInfo, SequenceDetailInfo, SessionStartRequest, ScenarioInfo, \
     PaginatedSessionResponse
+from utils.get_user_id import get_user_id
 from utils.proxy_request import proxy_request
 
 state_router = APIRouter(prefix="/state", tags=["게임 상태 중계"])
@@ -36,10 +37,7 @@ class StateRouter:
         summary="게임 시작 - 사용자 게임 세션을 생성합니다."
     )
     async def start_session(self, request: SessionStartRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-        token = auth.credentials
-        # 1. 토큰 복호화 및 유효성 검증
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: str = get_user_id(auth)
         params = {**request.model_dump(), "user_id": user_id}
         return await proxy_request("POST", STATE_MANAGER_URL, f"{self.base_prefix}/session/start", auth.credentials, json=params)
 
@@ -57,12 +55,8 @@ class StateRouter:
             is_deleted: bool = Query(False, description="삭제된 세션 포함 여부 (true: 삭제됨, false: 활성 상태)"),
             auth: HTTPAuthorizationCredentials = Depends(security)
     ):
-        token = auth.credentials
-        # 1. 토큰 복호화 및 유효성 검증
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub") # 조회할 사용자의 고유 ID
+        user_id: str = get_user_id(auth)
 
-        print(f"/session/list?user_id={user_id}&skip={skip}&limit={limit}&is_deleted={is_deleted}")
         return await proxy_request(
             "GET",
             RULE_ENGINE_URL,

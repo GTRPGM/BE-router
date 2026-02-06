@@ -12,7 +12,6 @@ class UserInfo(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    user_id: int
     username: str
     email: str
 
