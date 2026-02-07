@@ -220,7 +220,7 @@ class StateRouter:
 
     @state_router.get(
         "/session/{session_id}/inventory",
-        response_model=WrappedResponse[dict[str, Any]],
+        response_model=WrappedResponse[list[dict[str, Any]]],
         summary="세션 인벤토리를 조회합니다.",
     )
     async def get_inventory(
