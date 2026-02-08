@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import List, Optional, Union, Annotated, Any
+from typing import Annotated, Any, List, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, BeforeValidator, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
 from common.dtos.pagination_meta import PaginationMeta
 from src.utils.parse_json import parse_json
@@ -14,10 +14,20 @@ class NPCRelation(BaseModel):
     affinity_score: int
     model_config = ConfigDict(from_attributes=True)
 
+
+class ItemBase(BaseModel):
+    item_id: str
+    name: str
+    description: str = ""
+    item_type: str = "misc"
+    meta: dict[str, Any] = Field(default_factory=dict)
+    is_stackable: bool = True
+
+
 class PlayerStateResponse(BaseModel):
     hp: int
     gold: int
-    items: List[int] = []
+    items: List[ItemBase] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 class FullPlayerState(BaseModel):
@@ -31,6 +41,13 @@ class ScenarioInfo(BaseModel):
     scenario_id: Union[str, UUID]
     title: str
     description: Optional[str] = None
+    difficulty: Optional[str] = None
+    genre: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
+    acts: List[dict[str, Any]] = Field(default_factory=list)
+    sequences: List[dict[str, Any]] = Field(default_factory=list)
+    npcs: List[dict[str, Any]] = Field(default_factory=list)
+    enemies: List[dict[str, Any]] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -54,6 +71,45 @@ class SessionStartRequest(BaseModel):
             }
         }
     )
+
+
+class InventoryUpdateRequest(BaseModel):
+    """세션 시작 직후 스타터 아이템 지급 등에 사용하는 인벤토리 업데이트 요청"""
+
+    player_id: str = Field(..., description="플레이어 UUID")
+    rule_id: int = Field(..., description="아이템 Rule ID")
+    quantity: int = Field(..., description="수량 변화량")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "player_id": "ed0234e3-ac5a-49ab-adc2-bab72f01953d",
+                "rule_id": 7901,
+                "quantity": 1,
+            }
+        }
+    )
+
+
+class ItemEarnRequest(BaseModel):
+    """플레이어 아이템 획득 요청 (state-manager /state/player/item/earn 중계용)"""
+
+    session_id: str = Field(..., description="세션 UUID")
+    player_id: str = Field(..., description="플레이어 UUID")
+    item_id: str = Field(..., description="아이템 상태 엔티티 UUID")
+    rule_id: int | None = Field(default=None, description="아이템 Rule ID (optional)")
+    quantity: int = Field(..., description="획득 수량")
+
+
+class ItemUseRequest(BaseModel):
+    """플레이어 아이템 사용 요청 (state-manager /state/player/item/use 중계용)"""
+
+    session_id: str = Field(..., description="세션 UUID")
+    player_id: str = Field(..., description="플레이어 UUID")
+    item_id: str = Field(..., description="아이템 상태 엔티티 UUID")
+    rule_id: int | None = Field(default=None, description="아이템 Rule ID (optional)")
+    quantity: int = Field(..., description="사용 수량")
+
 
 class SessionInfo(BaseModel):
     session_id: Union[str, UUID]
@@ -120,6 +176,20 @@ class PlayerNPCRelationInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class SequenceItemInfo(BaseModel):
+    """시퀀스 내 아이템 요약 정보"""
+
+    item_id: Union[str, UUID]
+    scenario_item_id: str
+    name: str
+    description: Optional[str] = None
+    item_type: Optional[str] = None
+    meta: JsonField = {}
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class SequenceDetailInfo(BaseModel):
     """시퀀스 상세 정보 (엔티티 및 관계 포함)"""
 
@@ -135,6 +205,7 @@ class SequenceDetailInfo(BaseModel):
     # 시퀀스 내 엔티티
     npcs: List[SequenceEntityInfo] = []
     enemies: List[SequenceEntityInfo] = []
+    items: List[SequenceItemInfo] = []
     # 엔티티 간 관계 (NPC-NPC, NPC-Enemy 등)
     entity_relations: List[EntityRelationInfo] = []
     # 플레이어-NPC 호감도 관계

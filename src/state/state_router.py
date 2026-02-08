@@ -8,6 +8,9 @@ from common.dtos.wrapped_response import WrappedResponse
 from configs.setting import RULE_ENGINE_URL, STATE_MANAGER_URL
 from state.dtos.state_dtos import (
     FullPlayerState,
+    InventoryUpdateRequest,
+    ItemEarnRequest,
+    ItemUseRequest,
     PaginatedSessionResponse,
     ScenarioInfo,
     SequenceDetailInfo,
@@ -40,6 +43,23 @@ class StateRouter:
             "GET",
             STATE_MANAGER_URL,
             f"{self.base_prefix}/scenarios",
+            auth.credentials,
+        )
+
+    @state_router.get(
+        "/scenario/{scenario_id}",
+        response_model=WrappedResponse[ScenarioInfo],
+        summary="시나리오 상세를 조회합니다.",
+    )
+    async def get_scenario(
+        self,
+        scenario_id: str,
+        auth: Annotated[HTTPAuthorizationCredentials, auth_dep],
+    ):
+        return await proxy_request(
+            "GET",
+            STATE_MANAGER_URL,
+            f"{self.base_prefix}/scenario/{scenario_id}",
             auth.credentials,
         )
 
@@ -250,4 +270,58 @@ class StateRouter:
             STATE_MANAGER_URL,
             f"{self.base_prefix}/session/{session_id}/items",
             auth.credentials,
+        )
+
+    @state_router.put(
+        "/inventory/update",
+        response_model=WrappedResponse[dict[str, Any]],
+        summary="플레이어 인벤토리를 업데이트합니다.",
+    )
+    async def update_inventory(
+        self,
+        request: InventoryUpdateRequest,
+        auth: Annotated[HTTPAuthorizationCredentials, auth_dep],
+    ):
+        return await proxy_request(
+            "PUT",
+            STATE_MANAGER_URL,
+            f"{self.base_prefix}/inventory/update",
+            auth.credentials,
+            json=request.model_dump(),
+        )
+
+    @state_router.post(
+        "/player/item/earn",
+        response_model=WrappedResponse[dict[str, Any]],
+        summary="플레이어 아이템 획득을 반영합니다.",
+    )
+    async def earn_item(
+        self,
+        request: ItemEarnRequest,
+        auth: Annotated[HTTPAuthorizationCredentials, auth_dep],
+    ):
+        return await proxy_request(
+            "POST",
+            STATE_MANAGER_URL,
+            f"{self.base_prefix}/player/item/earn",
+            auth.credentials,
+            json=request.model_dump(),
+        )
+
+    @state_router.post(
+        "/player/item/use",
+        response_model=WrappedResponse[dict[str, Any]],
+        summary="플레이어 아이템 사용을 반영합니다.",
+    )
+    async def use_item(
+        self,
+        request: ItemUseRequest,
+        auth: Annotated[HTTPAuthorizationCredentials, auth_dep],
+    ):
+        return await proxy_request(
+            "POST",
+            STATE_MANAGER_URL,
+            f"{self.base_prefix}/player/item/use",
+            auth.credentials,
+            json=request.model_dump(),
         )
