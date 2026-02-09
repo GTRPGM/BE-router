@@ -30,3 +30,17 @@ jobs:
           uv run pytest || [ $? -eq 5 ]
         env:
           PYTHONPATH: src
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.POSTGRES_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALGORITHM: ${{ secrets.ALGORITHM }}
+          APP_HOST: "127.0.0.1"
+          APP_PORT: ${{ secrets.APP_PORT }}
+          WEB_PORT: ${{ secrets.WEB_PORT }}
+          RULE_ENGINE_PORT: ${{ secrets.RULE_ENGINE_PORT }}
+          APP_ENV: "local"
