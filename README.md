@@ -258,7 +258,7 @@ uv sync
     ```bash
     uvicorn src.main:app --reload
     ```
-    - 위 명령어는 `src/main.py` 파일의 `app` 객체를 사용하여 FastAPI 서버를 시작하고, 코드 변경 시 자동으로 서버를 재시작합니다. 
+    - 위 명령어는 `src/main.py` 파일의 `app` 객체를 사용하여 FastAPI 서버를 시작하고, 코드 변경 시 자동으로 서버를 재시작합니다.
     - 파이참에서는 main.py의 `if __name__ == "__main__":` 찾아 ▶ 아이콘 버튼을 눌러 직접 실행해도 됩니다. 첫 실행 이후에는 Shift + f10 조합키를 눌러 즉시 실행이 가능합니다.
 
 ### API 문서 확인

@@ -63,7 +63,6 @@ class StateRouter:
             auth.credentials,
         )
 
-
     # 사용자 게임 세션 생성
     @state_router.post(
         "/session/start",  # 임시 라우트 경로
@@ -85,7 +84,6 @@ class StateRouter:
             json=params,
         )
 
-
     # 사용자 세션 목록 조회
     @state_router.get(
         "/session/list",
@@ -96,22 +94,15 @@ class StateRouter:
         self,
         auth: Annotated[HTTPAuthorizationCredentials, auth_dep],
         skip: int = Query(0, description="페이지네이션: 건너뛸 항목 수", ge=0),
-        limit: int = Query(
-            10, description="페이지네이션: 한 번에 가져올 항목 수", ge=1, le=100
-        ),
-        is_deleted: bool = Query(
-            False, description="삭제된 세션 포함 여부 (true: 삭제됨, false: 활성 상태)"
-        ),
+        limit: int = Query(10, description="페이지네이션: 한 번에 가져올 항목 수", ge=1, le=100),
+        is_deleted: bool = Query(False, description="삭제된 세션 포함 여부 (true: 삭제됨, false: 활성 상태)"),
     ):
         user_id: str = get_user_id(auth)
 
         return await proxy_request(
             "GET",
             RULE_ENGINE_URL,
-            (
-                f"/session/list?user_id={user_id}&skip={skip}"
-                f"&limit={limit}&is_deleted={is_deleted}"
-            ),
+            (f"/session/list?user_id={user_id}&skip={skip}&limit={limit}&is_deleted={is_deleted}"),
             auth.credentials,
         )
 
@@ -131,7 +122,6 @@ class StateRouter:
             f"{self.base_prefix}/sessions/active",
             auth.credentials,
         )
-
 
     # 세션 정보 조회
     @state_router.get(

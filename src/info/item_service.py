@@ -11,17 +11,13 @@ class ItemService:
         self.count_items_sql = load_sql("info", "count_items")
 
     async def get_items(self, item_ids: Optional[List[int]], skip: int, limit: int):
-        params = {
-            "item_ids": item_ids if item_ids else None,
-            "limit": limit,
-            "skip": skip
-        }
+        params = {"item_ids": item_ids if item_ids else None, "limit": limit, "skip": skip}
 
         # 전체 개수 조회
         self.cursor.execute(self.count_items_sql, params)
         count_result = self.cursor.fetchone()
         # RealDictCursor를 사용하므로 키값으로 접근 (count, COUNT(*), 혹은 별칭)
-        total_count = count_result['count'] if count_result else 0
+        total_count = count_result["count"] if count_result else 0
 
         # 데이터 목록 조회
         self.cursor.execute(self.get_items_sql, params)
@@ -32,11 +28,7 @@ class ItemService:
         is_last_page = (skip + limit) >= total_count
 
         meta = PaginationMeta(
-            total_count=total_count,
-            skip=skip,
-            limit=limit,
-            is_last_page=is_last_page,
-            total_pages=total_pages
+            total_count=total_count, skip=skip, limit=limit, is_last_page=is_last_page, total_pages=total_pages
         )
 
         return items, meta

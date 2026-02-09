@@ -49,9 +49,7 @@ class EnemyDetailResponse(BaseModel):
     description: Optional[str] = Field(None, description="적 상세 묘사")
     type: Optional[str] = Field(None, description="적 유형 (기계, 정령 등)")
     created_at: datetime = Field(..., description="생성 일시")
-    drops: List[EnemyDropDetail] = Field(
-        default_factory=list, description="드롭 가능한 아이템 목록"
-    )
+    drops: List[EnemyDropDetail] = Field(default_factory=list, description="드롭 가능한 아이템 목록")
 
     class Config:
         # DB 조회 결과(dict)를 Pydantic 모델로 자동 변환하기 위한 설정

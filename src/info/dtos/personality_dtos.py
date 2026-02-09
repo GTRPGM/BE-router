@@ -6,9 +6,7 @@ from common.dtos.pagination_meta import PaginationMeta
 
 
 class PersonalityRequest(BaseModel):
-    personality_ids: Optional[List[str]] = Field(
-        None, description="조회할 성격 ID 리스트"
-    )
+    personality_ids: Optional[List[str]] = Field(None, description="조회할 성격 ID 리스트")
     skip: int = Field(
         0,
         ge=0,

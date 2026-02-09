@@ -21,9 +21,7 @@ try:
     )
     logger.info("✅ 데이터베이스 커넥션 풀이 성공적으로 생성되었습니다.")
 except Exception as e:
-    logger.error(
-        f"❌ 데이터베이스 커넥션 풀 생성 중 치명적인 오류 발생: {e}", exc_info=True
-    )
+    logger.error(f"❌ 데이터베이스 커넥션 풀 생성 중 치명적인 오류 발생: {e}", exc_info=True)
     sys.exit(1)  # 커넥션 풀 생성 실패 시 애플리케이션 즉시 종료
 
 
@@ -46,9 +44,7 @@ def get_db_cursor():
         if conn:
             conn.rollback()
         logger.error(f"❌ 데이터베이스 연결 또는 운영 오류 발생: {e}", exc_info=True)
-        raise ConnectionError(
-            "데이터베이스 연결 또는 운영 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-        ) from e
+        raise ConnectionError("데이터베이스 연결 또는 운영 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") from e
     except psycopg2.Error as e:
         if conn:
             conn.rollback()
@@ -62,12 +58,8 @@ def get_db_cursor():
         if isinstance(e, HTTPException):
             raise e
 
-        logger.error(
-            f"❌ 데이터베이스 커서 사용 중 예상치 못한 오류 발생: {e}", exc_info=True
-        )
-        raise RuntimeError(
-            "데이터베이스 사용 중 예상치 못한 오류가 발생했습니다."
-        ) from e
+        logger.error(f"❌ 데이터베이스 커서 사용 중 예상치 못한 오류 발생: {e}", exc_info=True)
+        raise RuntimeError("데이터베이스 사용 중 예상치 못한 오류가 발생했습니다.") from e
     finally:
         if conn:
             connection_pool.putconn(conn)

@@ -6,12 +6,4 @@ from src.scenario.scenario_router import scenario_router
 from src.state.state_router import state_router
 from src.user.user_router import user_router
 
-API_ROUTERS = [
-    user_router,
-    auth_router,
-    state_router,
-    gm_router,
-    scenario_router,
-    info_router,
-    minigame_router
-]
+API_ROUTERS = [user_router, auth_router, state_router, gm_router, scenario_router, info_router, minigame_router]

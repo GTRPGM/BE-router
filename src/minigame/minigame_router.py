@@ -12,17 +12,15 @@ from utils.proxy_stream import proxy_stream
 minigame_router = APIRouter(prefix="/minigame", tags=["미니게임"])
 auth_scheme = HTTPBearer()
 
+
 @cbv(minigame_router)
 class MinigameRouter:
     base_prefix = "/play"
 
-    @minigame_router.get(
-        "/riddle",
-        summary="GM과 수수께끼 미니게임을 진행합니다."
-    )
+    @minigame_router.get("/riddle", summary="GM과 수수께끼 미니게임을 진행합니다.")
     async def proxy_riddle(
-            self,
-            token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
+        self,
+        token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
     ):
         # 1. 토큰에서 user_id 추출 (이미 구현된 토큰 디코딩 함수가 있다고 가정)
         token = token_auth.credentials
@@ -35,18 +33,12 @@ class MinigameRouter:
         # 3. 스트리밍 중계 실행
         generator = await proxy_stream(RULE_ENGINE_URL, path, token)
 
-        return StreamingResponse(
-            generator,
-            media_type="text/event-stream"
-        )
+        return StreamingResponse(generator, media_type="text/event-stream")
 
-    @minigame_router.get(
-        "/quiz",
-        summary="GM과 동굴 탐험대 퀴즈 미니게임을 진행합니다."
-    )
+    @minigame_router.get("/quiz", summary="GM과 동굴 탐험대 퀴즈 미니게임을 진행합니다.")
     async def proxy_quiz(
-            self,
-            token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
+        self,
+        token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
     ):
         # 1. 토큰에서 user_id 추출 (이미 구현된 토큰 디코딩 함수가 있다고 가정)
         token = token_auth.credentials
@@ -59,19 +51,13 @@ class MinigameRouter:
         # 3. 스트리밍 중계 실행
         generator = await proxy_stream(RULE_ENGINE_URL, path, token)
 
-        return StreamingResponse(
-            generator,
-            media_type="text/event-stream"
-        )
+        return StreamingResponse(generator, media_type="text/event-stream")
 
-    @minigame_router.post(
-        "/answer",
-        summary="사용자가 입력한 답안의 정답 여부를 확인합니다."
-    )
+    @minigame_router.post("/answer", summary="사용자가 입력한 답안의 정답 여부를 확인합니다.")
     async def proxy_answer(
-            self,
-            request: AnswerRequest,
-            token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
+        self,
+        request: AnswerRequest,
+        token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
     ):
         # 1. 토큰에서 유저 정보 추출
         token = token_auth.credentials
@@ -83,11 +69,7 @@ class MinigameRouter:
 
         # 3. proxy_request를 통해 rule-engine 마이크로서비스로 요청 전달
         response_data = await proxy_request(
-            method="POST",
-            base_url=RULE_ENGINE_URL,
-            path=path,
-            token=token,
-            json=request.model_dump()
+            method="POST", base_url=RULE_ENGINE_URL, path=path, token=token, json=request.model_dump()
         )
 
         return response_data

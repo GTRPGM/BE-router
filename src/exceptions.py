@@ -26,9 +26,7 @@ def init_exception_handlers(app: FastAPI):
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
-        logger.error(
-            f"⚠️ HTTP {exc.status_code} Error: {request.method} {request.url.path}"
-        )
+        logger.error(f"⚠️ HTTP {exc.status_code} Error: {request.method} {request.url.path}")
         logger.error(f"Detail: {exc.detail}")
         return JSONResponse(
             status_code=exc.status_code,
@@ -40,9 +38,7 @@ def init_exception_handlers(app: FastAPI):
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        request: Request, exc: RequestValidationError
-    ):
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
         errors = exc.errors()
         error_details = []
         for error in errors:

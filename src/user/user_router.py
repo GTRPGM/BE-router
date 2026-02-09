@@ -19,21 +19,12 @@ security = HTTPBearer()
 class UserHandler:
     base_prefix = "/user"
 
-    @user_router.get(
-        "/detail", response_model=WrappedResponse[UserInfo], summary="회원 정보 조회"
-    )
+    @user_router.get("/detail", response_model=WrappedResponse[UserInfo], summary="회원 정보 조회")
     async def get_user(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
-        return await proxy_request(
-            "GET",
-            RULE_ENGINE_URL,
-            f"{self.base_prefix}/{user_id}",
-            auth.credentials
-        )
+        return await proxy_request("GET", RULE_ENGINE_URL, f"{self.base_prefix}/{user_id}", auth.credentials)
 
-    @user_router.post(
-        "/create", response_model=WrappedResponse[UserInfo], summary="회원 가입"
-    )
+    @user_router.post("/create", response_model=WrappedResponse[UserInfo], summary="회원 가입")
     async def create_user(
         self,
         request_data: UserCreateRequest,
@@ -49,63 +40,36 @@ class UserHandler:
             "message": f"{request_data.username}님, 가입을 환영합니다!",
         }
 
-    @user_router.put(
-        "/update", response_model=WrappedResponse[UserInfo], summary="회원 정보 수정"
-    )
+    @user_router.put("/update", response_model=WrappedResponse[UserInfo], summary="회원 정보 수정")
     async def update_user(
-            self,
-            request_data: UserUpdateRequest,
-            auth: HTTPAuthorizationCredentials = Depends(security)
+        self, request_data: UserUpdateRequest, auth: HTTPAuthorizationCredentials = Depends(security)
     ):
         user_id: str = get_user_id(auth)
         params = {**request_data.model_dump(), "user_id": user_id}
-        return await proxy_request(
-            "PUT",
-            RULE_ENGINE_URL,
-            f"{self.base_prefix}/update",
-            auth.credentials,
-            json=params
-        )
+        return await proxy_request("PUT", RULE_ENGINE_URL, f"{self.base_prefix}/update", auth.credentials, json=params)
 
-
-    @user_router.patch(
-        "/password", response_model=WrappedResponse[int], summary="회원 비밀번호 변경"
-    )
+    @user_router.patch("/password", response_model=WrappedResponse[int], summary="회원 비밀번호 변경")
     async def update_user_pw(
-            self, request_data: UserPWUpdateRequest,
-            auth_service: AuthService = Depends(get_auth_service),
-            auth: HTTPAuthorizationCredentials = Depends(security)
+        self,
+        request_data: UserPWUpdateRequest,
+        auth_service: AuthService = Depends(get_auth_service),
+        auth: HTTPAuthorizationCredentials = Depends(security),
     ):
         user_id: str = get_user_id(auth)
         user = await auth_service.get_current_user_info(user_id)
 
         if not user or not verify_password(request_data.old_pw, user["password_hash"]):
-            raise HTTPException(
-                status_code=401,
-                detail="기존 비밀번호가 일치하지 않습니다."
-            )
+            raise HTTPException(status_code=401, detail="기존 비밀번호가 일치하지 않습니다.")
 
         params = {
             "user_id": int(user_id),
             "password_hash": get_password_hash(request_data.new_pw),
         }
         return await proxy_request(
-            "PATCH",
-            RULE_ENGINE_URL,
-            f"{self.base_prefix}/password",
-            auth.credentials,
-            json=params
+            "PATCH", RULE_ENGINE_URL, f"{self.base_prefix}/password", auth.credentials, json=params
         )
 
-
-    @user_router.delete(
-        "/delete", response_model=WrappedResponse[int], summary="회윈 탈퇴"
-    )
+    @user_router.delete("/delete", response_model=WrappedResponse[int], summary="회윈 탈퇴")
     async def delete_user(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
-        return await proxy_request(
-            "DELETE",
-            RULE_ENGINE_URL,
-            f"{self.base_prefix}/delete/{user_id}",
-            auth.credentials
-        )
+        return await proxy_request("DELETE", RULE_ENGINE_URL, f"{self.base_prefix}/delete/{user_id}", auth.credentials)

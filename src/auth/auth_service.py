@@ -22,11 +22,7 @@ class AuthService:
 
     async def signup(self, username: str, hashed_password: str, email: str):
         try:
-            params = {
-                "username": username,
-                "password_hash": hashed_password,
-                "email": email
-            }
+            params = {"username": username, "password_hash": hashed_password, "email": email}
             self.cursor.execute(self.create_user_sql, params)
             new_user = self.cursor.fetchone()
             return new_user
@@ -46,10 +42,7 @@ class AuthService:
 
         # 유저 검증 및 비밀번호 확인
         if not user or not verify_password(password, user["password_hash"]):
-            raise HTTPException(
-                status_code=401,
-                detail="아이디 또는 비밀번호가 잘못되었습니다."
-            ) from None
+            raise HTTPException(status_code=401, detail="아이디 또는 비밀번호가 잘못되었습니다.") from None
 
         token_data = {"sub": str(user["user_id"]), "username": user["username"]}
         access_token = create_access_token(data=token_data)
@@ -65,10 +58,7 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user_info": {
-                "user_id": user["user_id"],
-                "username": user["username"]
-            },
+            "user_info": {"user_id": user["user_id"], "username": user["username"]},
         }
 
     async def refresh_access_token(self, refresh_token: str) -> TokenResponse:
@@ -83,36 +73,23 @@ class AuthService:
             if not saved_token or saved_token != refresh_token:
                 raise ValueError("Invalid Refresh Token")
 
-            new_access = create_access_token(
-                data={"sub": user_id, "username": username}
-            )
+            new_access = create_access_token(data={"sub": user_id, "username": username})
             return TokenResponse(access_token=new_access)
 
         except Exception:
-            raise HTTPException(
-                status_code=401, detail="인증이 만료되었습니다. 다시 로그인해주세요."
-            ) from None
+            raise HTTPException(status_code=401, detail="인증이 만료되었습니다. 다시 로그인해주세요.") from None
 
     async def get_current_user_info(self, user_id: str) -> Dict[str, Any]:
         """토큰에서 추출한 user_id로 사용자 정보를 조회합니다."""
-        self.cursor.execute(
-            self.get_user_by_id_sql,
-            {"user_id": user_id}
-        )
+        self.cursor.execute(self.get_user_by_id_sql, {"user_id": user_id})
         user = self.cursor.fetchone()
 
         if not user:
-            raise HTTPException(
-                status_code=404,
-                detail="사용자를 찾을 수 없습니다."
-            ) from None
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.") from None
 
         # 비활성화된 계정 체크 등 추가 로직 가능
         if not user.get("is_active"):
-            raise HTTPException(
-                status_code=403,
-                detail="비활성화된 계정입니다."
-            ) from None
+            raise HTTPException(status_code=403, detail="비활성화된 계정입니다.") from None
 
         return user
 

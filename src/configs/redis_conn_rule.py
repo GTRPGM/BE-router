@@ -36,16 +36,10 @@ def get_redis_client():
         return redis_client
     except redis.exceptions.ConnectionError as e:
         logger.error(f"❌ Redis 클라이언트 요청 중 연결 오류 발생: {e}", exc_info=True)
-        raise ConnectionError(
-            "Redis 서버에 연결할 수 없습니다. 설정을 확인하거나 서버 상태를 점검하세요."
-        ) from e
+        raise ConnectionError("Redis 서버에 연결할 수 없습니다. 설정을 확인하거나 서버 상태를 점검하세요.") from e
     except Exception as e:
-        logger.error(
-            f"❌ Redis 클라이언트 요청 중 예상치 못한 오류 발생: {e}", exc_info=True
-        )
-        raise RuntimeError(
-            "Redis 클라이언트 사용 중 예상치 못한 오류가 발생했습니다."
-        ) from e
+        logger.error(f"❌ Redis 클라이언트 요청 중 예상치 못한 오류 발생: {e}", exc_info=True)
+        raise RuntimeError("Redis 클라이언트 사용 중 예상치 못한 오류가 발생했습니다.") from e
 
 
 check_redis_connection()

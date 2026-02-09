@@ -14,6 +14,7 @@ from src.auth.dtos.login_dtos import LoginRequest, Token, TokenResponse
 auth_router = APIRouter(prefix="/auth", tags=["인증 및 로그인"])
 auth_scheme = HTTPBearer()
 
+
 @cbv(auth_router)
 class AuthHandler:
     @auth_router.post(
@@ -21,15 +22,9 @@ class AuthHandler:
         summary="로그인",
         response_model=WrappedResponse[Token],
     )
-    async def login(
-            self,
-            login_data: LoginRequest,
-            auth_service: AuthService = Depends(get_auth_service)
-    ):
+    async def login(self, login_data: LoginRequest, auth_service: AuthService = Depends(get_auth_service)):
         # 서비스에 DTO 데이터 전달
-        auth_result = await auth_service.authenticate_user(
-            login_data.username, login_data.password
-        )
+        auth_result = await auth_service.authenticate_user(login_data.username, login_data.password)
 
         return {
             "data": auth_result,
@@ -42,9 +37,9 @@ class AuthHandler:
         response_model=WrappedResponse[Dict[str, Any]],  # 필요시 UserResponse DTO 사용
     )
     async def get_me(
-            self,
-            token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
-            auth_service: AuthService = Depends(get_auth_service)
+        self,
+        token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
+        auth_service: AuthService = Depends(get_auth_service),
     ):
         try:
             token = token_auth.credentials
@@ -58,10 +53,7 @@ class AuthHandler:
             # 2. 서비스 계층에서 유저 정보 조회
             user_info = await auth_service.get_current_user_info(user_id)
 
-            return {
-                "data": user_info,
-                "message": "인증되었습니다."
-            }
+            return {"data": user_info, "message": "인증되었습니다."}
 
         except ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.") from None
@@ -74,9 +66,9 @@ class AuthHandler:
         response_model=WrappedResponse[TokenResponse],
     )
     async def refresh_token(
-            self,
-            refresh_token: str = Body(..., embed=True),  # {"refresh_token": "..."} 형태
-            auth_service: AuthService = Depends(get_auth_service)
+        self,
+        refresh_token: str = Body(..., embed=True),  # {"refresh_token": "..."} 형태
+        auth_service: AuthService = Depends(get_auth_service),
     ):
         """
         액세스 토큰 만료 시 리프레시 토큰을 사용하여 토큰을 재발급합니다.
@@ -91,13 +83,12 @@ class AuthHandler:
         except Exception:
             raise HTTPException(status_code=401, detail="토큰 갱신에 실패했습니다.") from None
 
-
     @auth_router.post("/logout")
     async def logout(
-            self,
-            # HTTPBearer를 통해 'Bearer ' 접두사를 떼고 토큰 값만 가져옴
-            token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
-            auth_service: AuthService = Depends(get_auth_service)
+        self,
+        # HTTPBearer를 통해 'Bearer ' 접두사를 떼고 토큰 값만 가져옴
+        token_auth: HTTPAuthorizationCredentials = Depends(auth_scheme),
+        auth_service: AuthService = Depends(get_auth_service),
     ):
         try:
             # 이미 Bearer가 제거된 순수 토큰 값

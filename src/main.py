@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
     # 서버가 종료될 때 실행
     await shutdown_event_handler()
 
+
 app = FastAPI(
     title="GTRPGM BE Router",
     description="GTRPGM 주요 서비스를 제공하며, 마이크로서비스 라우팅을 담당합니다.",
@@ -33,14 +34,16 @@ app = FastAPI(
         {"url": f"http://localhost:{APP_PORT}", "description": "Local env"},
         {"url": f"http://{REMOTE_HOST}:{APP_PORT}", "description": "Dev env"},
     ],
-    lifespan = lifespan
+    lifespan=lifespan,
 )
+
 
 @app.middleware("http")
 async def error_logging_middleware(request: Request, call_next):
     # 이제 에러 로그는 핸들러가 담당하므로 미들웨어는 통과만 시킵니다.
     response = await call_next(request)
     return response
+
 
 # 커스덤 에러 핸들러 초기화
 init_exception_handlers(app)
@@ -61,6 +64,7 @@ for router in API_ROUTERS:
 def read_root():
     return {"message": "반갑습니다. GTRPGM 룰 엔진입니다!"}
 
+
 # health check
 @app.get("/health")
 def health_check() -> Dict[str, str]:
@@ -72,8 +76,7 @@ def health_check() -> Dict[str, str]:
     except Exception as e:
         # 하나라도 실패하면 503 에러 반환
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"status": "error", "message": str(e)}
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"status": "error", "message": str(e)}
         ) from e
 
 

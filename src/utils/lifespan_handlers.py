@@ -10,8 +10,7 @@ from utils.logger import info
 def _initialize_http_client():
     info("HTTP 클라이언트를 구성합니다...")
     http_holder.client = httpx.AsyncClient(
-        timeout=httpx.Timeout(10.0),
-        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
+        timeout=httpx.Timeout(10.0), limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
     )
 
 

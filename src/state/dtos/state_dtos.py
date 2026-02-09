@@ -30,10 +30,12 @@ class PlayerStateResponse(BaseModel):
     items: List[ItemBase] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
+
 class FullPlayerState(BaseModel):
     player: PlayerStateResponse
     player_npc_relations: List[NPCRelation]
     model_config = ConfigDict(from_attributes=True)
+
 
 class ScenarioInfo(BaseModel):
     """조회용 정보"""
@@ -51,6 +53,7 @@ class ScenarioInfo(BaseModel):
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
 
 class SessionStartRequest(BaseModel):
     """세션 시작 요청"""
@@ -135,7 +138,9 @@ class SessionInfo(BaseModel):
     updated_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 JsonField = Annotated[Any, BeforeValidator(parse_json)]
+
 
 class SequenceEntityInfo(BaseModel):
     """시퀀스 내 엔티티 요약 정보"""
@@ -150,6 +155,7 @@ class SequenceEntityInfo(BaseModel):
     is_defeated: Optional[bool] = None  # enemy only
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class EntityRelationInfo(BaseModel):
     """엔티티 간 관계 정보 (Apache AGE 그래프 RELATION 엣지)"""
@@ -218,6 +224,7 @@ class SessionResponse(BaseModel):
     user_id: int
     session_id: str
     created_at: datetime
+
 
 class PaginatedSessionResponse(BaseModel):
     sessions: List[SessionResponse]

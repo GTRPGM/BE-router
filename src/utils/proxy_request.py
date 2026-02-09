@@ -51,6 +51,5 @@ async def proxy_request(method: str, base_url: str, path: str, token: str = None
 
     except httpx.RequestError as exc:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"마이크로서비스 연결 실패: {exc}"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"마이크로서비스 연결 실패: {exc}"
         ) from None
