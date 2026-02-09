@@ -33,7 +33,7 @@ class AuthService:
 
         except Exception as e:
             # 중복 유저 등 예외 처리
-            raise HTTPException(status_code=400, detail="이미 존재하는 사용자입니다.")
+            raise HTTPException(status_code=400, detail="이미 존재하는 사용자입니다.") from None
 
     async def authenticate_user(self, username: str, password: str) -> Dict[str, Any]:
         """사용자 인증 및 토큰 세트 발행 (Redis 저장 포함)"""
@@ -49,7 +49,7 @@ class AuthService:
             raise HTTPException(
                 status_code=401,
                 detail="아이디 또는 비밀번호가 잘못되었습니다."
-            )
+            ) from None
 
         token_data = {"sub": str(user["user_id"]), "username": user["username"]}
         access_token = create_access_token(data=token_data)
@@ -91,7 +91,7 @@ class AuthService:
         except Exception:
             raise HTTPException(
                 status_code=401, detail="인증이 만료되었습니다. 다시 로그인해주세요."
-            )
+            ) from None
 
     async def get_current_user_info(self, user_id: str) -> Dict[str, Any]:
         """토큰에서 추출한 user_id로 사용자 정보를 조회합니다."""
@@ -105,14 +105,14 @@ class AuthService:
             raise HTTPException(
                 status_code=404,
                 detail="사용자를 찾을 수 없습니다."
-            )
+            ) from None
 
         # 비활성화된 계정 체크 등 추가 로직 가능
         if not user.get("is_active"):
             raise HTTPException(
                 status_code=403,
                 detail="비활성화된 계정입니다."
-            )
+            ) from None
 
         return user
 

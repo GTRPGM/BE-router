@@ -52,7 +52,11 @@ class UserHandler:
     @user_router.put(
         "/update", response_model=WrappedResponse[UserInfo], summary="회원 정보 수정"
     )
-    async def update_user(self, request_data: UserUpdateRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    async def update_user(
+            self,
+            request_data: UserUpdateRequest,
+            auth: HTTPAuthorizationCredentials = Depends(security)
+    ):
         user_id: str = get_user_id(auth)
         params = {**request_data.model_dump(), "user_id": user_id}
         return await proxy_request(

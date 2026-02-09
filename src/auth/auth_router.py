@@ -88,7 +88,7 @@ class AuthHandler:
             return {"data": result}
         except ValueError as e:
             # 서비스에서 발생한 ValueError를 401 에러로 변환
-            raise HTTPException(status_code=401, detail=str(e))
+            raise HTTPException(status_code=401, detail=str(e)) from None
         except Exception:
             raise HTTPException(status_code=401, detail="토큰 갱신에 실패했습니다.") from None
 
