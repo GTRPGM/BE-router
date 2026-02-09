@@ -6,7 +6,7 @@ from fastapi_utils.cbv import cbv
 
 from configs.setting import GM_SERVICE_URL
 from gm.dtos.gm_dtos import (
-    GameTurnResponse,
+    GameTurnResponseV2,
     HistoryEntry,
     NpcTurnInput,
     SessionSummaryResponse,
@@ -43,7 +43,7 @@ class GmRouter:
 
     @gm_router.post(
         "/turn",
-        response_model=GameTurnResponse,
+        response_model=GameTurnResponseV2,
         summary="턴을 진행합니다.",
     )
     async def play_turn(
@@ -61,7 +61,7 @@ class GmRouter:
 
     @gm_router.post(
         "/npc-turn",
-        response_model=GameTurnResponse,
+        response_model=GameTurnResponseV2,
         summary="NPC 턴을 진행합니다.",
     )
     async def play_npc_turn(
