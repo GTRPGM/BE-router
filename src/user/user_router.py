@@ -24,7 +24,12 @@ class UserHandler:
     )
     async def get_user(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
-        return await proxy_request("GET", RULE_ENGINE_URL, f"{self.base_prefix}/{user_id}", auth.credentials)
+        return await proxy_request(
+            "GET",
+            RULE_ENGINE_URL,
+            f"{self.base_prefix}/{user_id}",
+            auth.credentials
+        )
 
     @user_router.post(
         "/create", response_model=WrappedResponse[UserInfo], summary="회원 가입"
@@ -50,7 +55,13 @@ class UserHandler:
     async def update_user(self, request_data: UserUpdateRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
         params = {**request_data.model_dump(), "user_id": user_id}
-        return await proxy_request("PUT", RULE_ENGINE_URL, f"{self.base_prefix}/update", auth.credentials, json=params)
+        return await proxy_request(
+            "PUT",
+            RULE_ENGINE_URL,
+            f"{self.base_prefix}/update",
+            auth.credentials,
+            json=params
+        )
 
 
     @user_router.patch(
@@ -74,7 +85,13 @@ class UserHandler:
             "user_id": int(user_id),
             "password_hash": get_password_hash(request_data.new_pw),
         }
-        return await proxy_request("PATCH", RULE_ENGINE_URL, f"{self.base_prefix}/password", auth.credentials, json=params)
+        return await proxy_request(
+            "PATCH",
+            RULE_ENGINE_URL,
+            f"{self.base_prefix}/password",
+            auth.credentials,
+            json=params
+        )
 
 
     @user_router.delete(
@@ -82,4 +99,9 @@ class UserHandler:
     )
     async def delete_user(self, auth: HTTPAuthorizationCredentials = Depends(security)):
         user_id: str = get_user_id(auth)
-        return await proxy_request("DELETE", RULE_ENGINE_URL, f"{self.base_prefix}/delete/{user_id}", auth.credentials)
+        return await proxy_request(
+            "DELETE",
+            RULE_ENGINE_URL,
+            f"{self.base_prefix}/delete/{user_id}",
+            auth.credentials
+        )

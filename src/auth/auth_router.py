@@ -65,9 +65,9 @@ class AuthHandler:
             }
 
         except ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.")
+            raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.") from None
         except Exception as e:
-            raise HTTPException(status_code=401, detail="인증에 실패했습니다.")
+            raise HTTPException(status_code=401, detail="인증에 실패했습니다.") from None
 
     @auth_router.post(
         "/refresh",
@@ -90,7 +90,7 @@ class AuthHandler:
             # 서비스에서 발생한 ValueError를 401 에러로 변환
             raise HTTPException(status_code=401, detail=str(e))
         except Exception:
-            raise HTTPException(status_code=401, detail="토큰 갱신에 실패했습니다.")
+            raise HTTPException(status_code=401, detail="토큰 갱신에 실패했습니다.") from None
 
 
     @auth_router.post("/logout")
@@ -113,4 +113,4 @@ class AuthHandler:
         except Exception:
             raise HTTPException(
                 status_code=401, detail="유효하지 않은 토큰이거나 로그아웃 중 오류가 발생했습니다."
-            )
+            ) from None
