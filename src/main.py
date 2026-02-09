@@ -35,6 +35,7 @@ app = FastAPI(
         {"url": f"http://{REMOTE_HOST}:{APP_PORT}", "description": "Dev env"},
     ],
     lifespan=lifespan,
+    swagger_ui_parameters={"persistAuthorization": True}
 )
 
 
