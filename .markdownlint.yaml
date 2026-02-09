@@ -15,3 +15,11 @@ MD041: false
 # MD024: 동일한 헤더 텍스트 허용
 MD024:
   siblings_only: true
+
+# 추가 허용사항 들
+MD004: { "style": "dash" }
+MD007: { "indent": 4 }
+MD022: false
+MD026: false
+MD029: false
+MD040: false

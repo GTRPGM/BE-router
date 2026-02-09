@@ -1,8 +1,8 @@
-from fastapi.responses import JSONResponse
-from fastapi import status
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
-from src.common.dtos.custom import CustomStatus, CommonResponse
+from fastapi.responses import JSONResponse
+
+from src.common.dtos.custom import CommonResponse, CustomStatus
 
 
 class CustomJSONResponse(JSONResponse):

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_utils.cbv import cbv
 
 from auth.auth_service import AuthService
@@ -7,7 +7,7 @@ from auth.utils.crypt_utils import get_password_hash, verify_password
 from common.dtos.wrapped_response import WrappedResponse
 from common.utils.get_services import get_auth_service
 from configs.setting import RULE_ENGINE_URL
-from user.dtos.user_dtos import UserInfo, UserCreateRequest, UserUpdateRequest, UserPWUpdateRequest
+from user.dtos.user_dtos import UserCreateRequest, UserInfo, UserPWUpdateRequest, UserUpdateRequest
 from utils.get_user_id import get_user_id
 from utils.proxy_request import proxy_request
 

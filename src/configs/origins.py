@@ -1,4 +1,4 @@
-from configs.setting import REMOTE_HOST, WEB_PORT, APP_PORT
+from configs.setting import APP_PORT, REMOTE_HOST, WEB_PORT
 
 origins = [
     f"http://localhost:{WEB_PORT}",

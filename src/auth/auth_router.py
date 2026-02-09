@@ -1,10 +1,9 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException, Body
-from fastapi import Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_utils.cbv import cbv
-from jose import jwt, ExpiredSignatureError
+from jose import ExpiredSignatureError, jwt
 
 from common.dtos.wrapped_response import WrappedResponse
 from common.utils.get_services import get_auth_service
@@ -66,7 +65,7 @@ class AuthHandler:
 
         except ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.") from None
-        except Exception as e:
+        except Exception:
             raise HTTPException(status_code=401, detail="인증에 실패했습니다.") from None
 
     @auth_router.post(

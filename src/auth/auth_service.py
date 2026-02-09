@@ -3,10 +3,10 @@ from typing import Any, Dict
 from fastapi import HTTPException
 from jose import jwt
 
+from src.auth.dtos.login_dtos import TokenResponse
 from src.configs.redis_conn import redis_client
 from src.configs.setting import ALGORITHM, REFRESH_TOKEN_EXPIRE_DAYS, SECRET_KEY
 from utils.load_sql import load_sql
-from src.auth.dtos.login_dtos import TokenResponse
 
 from .utils.crypt_utils import verify_password
 from .utils.token_utils import create_access_token, create_refresh_token
@@ -31,7 +31,7 @@ class AuthService:
             new_user = self.cursor.fetchone()
             return new_user
 
-        except Exception as e:
+        except Exception:
             # 중복 유저 등 예외 처리
             raise HTTPException(status_code=400, detail="이미 존재하는 사용자입니다.") from None
 

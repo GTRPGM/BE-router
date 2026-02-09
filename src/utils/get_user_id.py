@@ -1,7 +1,7 @@
 from fastapi.security import HTTPAuthorizationCredentials
 from jose import jwt
 
-from configs.setting import SECRET_KEY, ALGORITHM
+from configs.setting import ALGORITHM, SECRET_KEY
 
 
 def get_user_id(auth: HTTPAuthorizationCredentials):

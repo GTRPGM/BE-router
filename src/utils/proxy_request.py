@@ -1,6 +1,7 @@
 import httpx
-from configs.http_client import http_holder
 from fastapi import HTTPException, status
+
+from configs.http_client import http_holder
 
 
 async def proxy_request(method: str, base_url: str, path: str, token: str = None, params=None, json=None):

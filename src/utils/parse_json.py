@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+
 def parse_json(v: Any) -> Any:
     if isinstance(v, str):
         try:
