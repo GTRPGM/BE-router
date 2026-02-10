@@ -31,4 +31,3 @@ def get_user_id(auth: HTTPAuthorizationCredentials):
             detail="인증에 실패하였습니다.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return user_id
