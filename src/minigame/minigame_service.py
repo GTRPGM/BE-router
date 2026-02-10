@@ -13,7 +13,7 @@ async def get_game_tip_sentence() -> str:
             detail="HTTP Client not initialized",
         )
 
-    user_prompt = "TRPG에 관한 15단어 이하의 게임 팁을 하나 알려줘. 한국어로 한 문장이어야 해."
+    user_prompt = "사용자에게 제공할 Table RPG에 관한 15단어 이하의 자세한 게임 팁을 하나 알려줘.(예: 주변 상황을 잘 둘러보세요. 자세한 행동 지문은 원만한 스토리 진행에 도움이 됩니다.) 한국어로 한 문장에서 두 문장 사이여야 해."
 
     payload = {
         "model": "gemini-2.5-flash",
