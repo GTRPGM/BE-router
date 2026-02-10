@@ -19,6 +19,14 @@ class MinigameRouter:
     base_prefix = "/play"
 
     @minigame_router.get(
+        "/tip-sentence",
+        summary="타자 연습용 게임 팁 문장을 요청합니다."
+    )
+    async def get_tip_sentence(self):
+        sentence = await get_game_tip_sentence()
+        return {"sentence": sentence}
+
+    @minigame_router.get(
         "/riddle",
         summary="GM과 수수께끼 미니게임을 진행합니다."
     )
