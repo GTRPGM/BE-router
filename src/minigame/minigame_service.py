@@ -1,9 +1,7 @@
 from fastapi import HTTPException, status
-
 from configs.http_client import http_holder
 from configs.setting import LLM_GATEWAY_URL
 from utils.logger import error
-
 
 async def get_game_tip_sentence() -> str:
     """
