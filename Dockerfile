@@ -27,7 +27,7 @@ LABEL authors="elian118"
 
 EXPOSE ${APP_PORT}
 
-HEALTHCHECK --start-period=20s --interval=30s --timeout=3s --retries=3 \
+HEALTHCHECK --start-period=20s --interval=300s --timeout=3s --retries=3 \
     CMD ["python", "-c", "import os, urllib.request; port=os.environ.get('APP_PORT'); urllib.request.urlopen(f'http://localhost:{port}/health')"]
 
 CMD ["python", "src/main.py"]
