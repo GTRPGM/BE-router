@@ -2,12 +2,13 @@ import httpx
 from fastapi import HTTPException, status
 
 from configs.http_client import http_holder
-
+from utils.logger import debug
 
 async def proxy_request(method: str, base_url: str, path: str, token: str = None, params=None, json=None):
     """마이크로서비스로 요청을 전달하는 공통 비동기 메서드"""
     url = f"{base_url}{path}"
     headers = {}
+    debug(f"proxy_url: {url}")
 
     if token:
         headers["Authorization"] = f"Bearer {token}"
