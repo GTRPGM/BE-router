@@ -4,9 +4,36 @@ from contextlib import contextmanager
 import psycopg2
 from fastapi import HTTPException
 from psycopg2 import extras, pool
+from sshtunnel import SSHTunnelForwarder
 
-from src.configs.setting import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
+from src.configs.setting import (
+    DB_HOST,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_PORT,
+    DB_USER,
+    SSH_ENABLED,
+    SSH_HOST,
+    SSH_KEY_PATH,
+    SSH_USER,
+)
 from src.utils.logger import logger
+
+# RDB SSH 터널 정의
+rdb_tunnel = None
+actual_db_port = DB_PORT
+
+if SSH_ENABLED:
+    rdb_tunnel = SSHTunnelForwarder(
+        (SSH_HOST, 22),
+        ssh_username=SSH_USER,
+        ssh_pkey=SSH_KEY_PATH,
+        remote_bind_address=('127.0.0.1', DB_PORT),
+        local_bind_address=('127.0.0.1', 0)
+    )
+    rdb_tunnel.start()
+    actual_db_port = rdb_tunnel.local_bind_port
+    logger.info(f"🚀 PostgreSQL용 SSH 터널 활성화 (Port: {actual_db_port})")
 
 # 커넥션 풀 설정
 try:
@@ -16,7 +43,7 @@ try:
         user=DB_USER,
         password=DB_PASSWORD,
         host=DB_HOST,
-        port=DB_PORT,
+        port=actual_db_port,
         database=DB_NAME,
     )
     logger.info("✅ 데이터베이스 커넥션 풀이 성공적으로 생성되었습니다.")
@@ -33,6 +60,10 @@ def get_db_cursor():
     """
     conn = None  # conn을 None으로 초기화합니다.
     try:
+        # 터널이 살아있는지 먼저 확인 (디버깅용)
+        if SSH_ENABLED and (not rdb_tunnel or not rdb_tunnel.is_active):
+            raise ConnectionError("RDB SSH 터널이 활성화되어 있지 않습니다.")
+
         conn = connection_pool.getconn()
         cursor = conn.cursor(cursor_factory=extras.RealDictCursor)
         yield cursor

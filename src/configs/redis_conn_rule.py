@@ -1,14 +1,35 @@
 import sys
 
 import redis
+from sshtunnel import SSHTunnelForwarder
 
-from configs.setting import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT
+from configs.setting import REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, SSH_ENABLED, SSH_HOST, SSH_USER, SSH_KEY_PATH
 from src.utils.logger import logger
+
+# Redis SSH 터널 정의
+redis_rule_tunnel = None
+actual_redis_rule_port = REDIS_PORT
+
+if SSH_ENABLED:
+    try:
+        redis_rule_tunnel = SSHTunnelForwarder(
+            (SSH_HOST, 22),
+            ssh_username=SSH_USER,
+            ssh_pkey=SSH_KEY_PATH,
+            remote_bind_address=('127.0.0.1', REDIS_PORT),
+            local_bind_address=('127.0.0.1', 0)
+        )
+        redis_rule_tunnel.start()
+        actual_redis_rule_port = redis_rule_tunnel.local_bind_port
+        logger.info(f"🚀 Redis용 SSH 터널이 활성화되었습니다. (Port: {actual_redis_rule_port})")
+    except Exception as e:
+        logger.error(f"❌ Redis SSH 터널 생성 실패: {e}")
+        sys.exit(1)
 
 # Redis 클라이언트 초기화
 redis_client = redis.StrictRedis(
     host=REDIS_HOST,
-    port=REDIS_PORT,
+    port=actual_redis_rule_port,
     password=REDIS_PASSWORD,
     decode_responses=True,  # 데이터를 문자열로 자동 디코딩
 )
