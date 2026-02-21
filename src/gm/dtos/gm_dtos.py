@@ -87,6 +87,9 @@ class GameTurnResponse(BaseModel):
     output_type: TurnOutputType = Field(..., description="출력 주체 타입")
     is_npc_turn: bool = Field(False, description="NPC 턴 여부")
     npc_turn: Optional["GameTurnResponse"] = Field(None, description="연쇄 NPC 턴")
+    npc_turns: List["GameTurnResponse"] = Field(
+        default_factory=list, description="연쇄 NPC 턴 목록"
+    )
 
 
 class GameTurnResponseV2(BaseModel):
@@ -115,6 +118,9 @@ class GameTurnResponseV2(BaseModel):
         ),
     )
     npc_turn: Optional["GameTurnResponseV2"] = Field(None, description="연쇄 NPC 턴")
+    npc_turns: List["GameTurnResponseV2"] = Field(
+        default_factory=list, description="연쇄 NPC 턴 목록"
+    )
 
 
 class SessionSummaryResponse(BaseModel):

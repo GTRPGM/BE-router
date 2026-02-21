@@ -14,10 +14,10 @@ APP_PORT = int(os.getenv("APP_PORT"))
 APP_ENV = os.getenv("APP_ENV")  # local, dev, prod 등
 
 # SSH 터널링 설정 (로컬 환경용)
-SSH_ENABLED = APP_ENV == "local"
 SSH_HOST = REMOTE_HOST
 SSH_USER = os.getenv("SSH_USER")
 SSH_KEY_PATH = os.getenv("SSH_KEY_PATH")
+SSH_ENABLED = APP_ENV == "local" and bool(SSH_HOST and SSH_USER and SSH_KEY_PATH)
 
 if SSH_ENABLED:
     DB_HOST = "127.0.0.1"
